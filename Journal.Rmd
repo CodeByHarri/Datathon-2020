@@ -1,5 +1,6 @@
 ---
-title: "Journal"
+title: "CAN ELECTRICITY CONSUMPTION PATTERNS TELL US ANYTHING ABOUT THE PANDEMIC?"
+author: "By Harri Somakanthan"
 output:
   html_document:
     toc: true
