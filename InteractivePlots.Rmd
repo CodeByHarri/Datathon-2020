@@ -14,6 +14,7 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 library(tidyverse)
 library(dplyr)
 library(plotly)
+library(scales)
 ```
 
 
@@ -43,49 +44,9 @@ library(plotly)
 # dfwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
 # 
 # write.csv(dfwide, 'widedata.csv')
-dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
-dfwide = dfwide[-1]
 ```
 
-
-```{r fig.cap="Figure 1: European Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-
-p <- plot_ly() %>%
-  add_trace( data = dfwide, x = ~end, y = ~load, type = 'scatter',
-             mode = 'lines', color = ~as.factor(country))
-p <- plotly_build(p)
-
-legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
-
-for(i in seq_along(p$x$data)){
-  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
-}
-
-#### LONG FORMAT DATA
-# fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
-# xy.list <- as.list(as.data.frame((df)))
-# for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
-#                                               name = paste0(i),  type = 'scatter',
-#                                               mode = 'lines',evaluate = TRUE) }
-
-p = p %>% layout(title = 'Energy Consumption in Western Europe',
-         xaxis = list(title = 'Time'),
-         yaxis = list(title = 'Energy Consumption (MW)'))
-
-p = p %>%
-    layout(xaxis = list(
-        range =
-            c(as.numeric(as.POSIXct("2018-00-01", format="%Y-%m-%d"))*1000,
-              as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
-        type = "date"))
-
-p
-```
-
-
-
-
-
+### Comparing Electricity Consumption to Weather in Australia
 
 
 ```{r fig.cap="Figure 2: Australian Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
@@ -130,9 +91,33 @@ aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
 auswide = gather(aus, state, load, NSW:VIC, factor_key=TRUE)
 
 
+weather = read.csv(paste0("ausdata/vicweather.csv"), header = TRUE, stringsAsFactors = FALSE)
+weather = gather(weather, Month, temp, Jan:Dec, factor_key=TRUE)
+weather$Date = as.Date(with(weather, paste(Year, Month,'1',sep="-")), "%Y-%b-%d")
+weather = weather[(weather$Date >= "2018-01-01	" & weather$Date <= "2020-08-30"),]
+weather$temp = rescale(weather$temp, to=c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
+weather = weather[order(as.Date(weather$Date, format="%Y/%m/%d")),]
+
+
+rainfall = read.csv(paste0("ausdata/vicrainfall.csv"), header = TRUE, stringsAsFactors = FALSE)
+rainfall = gather(rainfall, Month, rain, Jan:Dec, factor_key=TRUE)
+rainfall$Date = as.Date(with(rainfall, paste(Year, Month,'1',sep="-")), "%Y-%b-%d")
+rainfall = rainfall[(rainfall$Date >= "2018-01-01	" & rainfall$Date <= "2020-08-30"),]
+rainfall$rain = rescale(rainfall$rain, c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
+rainfall = rainfall[order(as.Date(rainfall$Date, format="%Y/%m/%d")),]
+
+
 p <- plot_ly() %>%
   add_trace( data = auswide, x = ~SETTLEMENTDATE, y = ~load, type = 'scatter',
-             mode = 'lines', color = ~as.factor(state))
+             mode = 'lines', color = ~as.factor(state), colors =c("#e63946", "#415a77"),alpha = 0.7)
+
+
+p = p %>% add_trace(data = weather, x = ~Date, y = ~temp, type = 'scatter',line=list(color='#48cae4',dash='dashed'),
+             mode = 'lines', name = 'VIC SCALED TEMP', alpha = 0.9)
+
+p = p %>% add_trace(data = rainfall, x = ~Date, y = ~rain, type = 'scatter',line=list(color='#0077b6',dash='dashed'),
+             mode = 'lines', name = 'VIC SCALED RAIN', alpha = 1)
+
 p <- plotly_build(p)
 
 p = p %>% layout(title = 'Energy Consumption in Australia',
@@ -142,15 +127,56 @@ p = p %>% layout(title = 'Energy Consumption in Australia',
 p = p %>%
     layout(xaxis = list(
         range = 
-            c(as.numeric(as.POSIXct("2018-00-01", format="%Y-%m-%d"))*1000,
+            c(as.numeric(as.POSIXct("2018-01-01", format="%Y-%m-%d"))*1000,
               as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
         type = "date"))
+
+
+legendItems <- list(NSW = 'legendonly', VIC = T, `VIC SCALED TEMP` = T, `VIC SCALED RAIN` = 'legendonly')
+
+for(i in seq_along(p$x$data)){
+  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+}
 
 p
 
 ```
 
 
+```{r fig.cap="Figure 1: European Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
+dfwide = dfwide[-1]
+p <- plot_ly() %>%
+  add_trace( data = dfwide, x = ~end, y = ~load, type = 'scatter',
+             mode = 'lines', color = ~as.factor(country))
+p <- plotly_build(p)
+
+legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
+
+for(i in seq_along(p$x$data)){
+  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+}
+
+#### LONG FORMAT DATA
+# fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
+# xy.list <- as.list(as.data.frame((df)))
+# for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
+#                                               name = paste0(i),  type = 'scatter',
+#                                               mode = 'lines',evaluate = TRUE) }
+
+p = p %>% layout(title = 'Energy Consumption in Western Europe',
+         xaxis = list(title = 'Time'),
+         yaxis = list(title = 'Energy Consumption (MW)'))
+
+p = p %>%
+    layout(xaxis = list(
+        range =
+            c(as.numeric(as.POSIXct("2018-00-01", format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+        type = "date"))
+
+p
+```
 
 
 
