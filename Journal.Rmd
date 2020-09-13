@@ -1,5 +1,5 @@
 ---
-title: "CAN ELECTRICITY CONSUMPTION PATTERNS TELL US ANYTHING ABOUT THE PANDEMIC?"
+title: "Can electricity consumption patterns tell us anything about the pandemic?"
 author: "By Harri Somakanthan"
 output:
   html_document:
@@ -13,117 +13,72 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+library(ggplot2)
+library(tidyverse)
+library(gridExtra)
 ```
 
-IMPORTANT: You can delete everything in here and start fresh. You might want to start by not deleting anything above this line until you know what that stuff is doing.
+# Results
+
+```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
+fr = read.csv("data/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+fr = na.omit(fr)
+fr$end = fr$end %>% as.Date()
+fr = aggregate(fr["load"], by=fr["end"], sum)
+fr = fr[1:(length(fr$load)-1),] 
+TRAIN2015TO2018 = fr[(fr$end> "2015-01-01	" & fr$end < "2018-12-31"),]
+TEST2017 = fr[(fr$end> "2017-01-01" & fr$end < "2017-07-30"),]
+TEST2018 = fr[(fr$end> "2018-01-01" & fr$end < "2018-07-30"),]
+TEST2019 = fr[(fr$end> "2019-01-01" & fr$end < "2019-07-30"),]
+TRAIN2016TO2019 = fr[(fr$end> "2016-01-01	" & fr$end < "2019-12-31"),]
+TEST2020 = fr[(fr$end> "2020-01-01" & fr$end < "2020-07-30"),]
+
+x1 = ggplot(fr, aes(x=end, y=load, color = "Electricity Consumed")) +
+  geom_line(size = 2) + theme_minimal() +
+  xlab("Date") + ylab("MW of Electricity Consumed") + scale_x_date(date_labels = "%Y") + ggtitle("FRANCE ELECTRICITY CONSUMPTION")
+
+fcBESTFIT1 = readRDS(file = "data/bf1.rds")
+fcBESTFIT2 = readRDS(file = "data/bf2.rds")
+p = readRDS(file = "data/p.rds")
+q = readRDS(file = "data/q.rds")
 
 
-This is an .Rmd file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a \# in front of your text, it will create a top level-header.
+lay <- rbind(c(1,1,1,1),
+             c(2,2,3,3))
 
-# My first post
-
-2018 | 7 | 23 Last compiled: `r Sys.Date()`
-
-Notice that whatever you define as a top level header, automatically gets put into the table of contents bar on the left. 
-
-## Second level header
-
-You can add more headers by adding more hashtags. These won't be put into the table of contents
-
-### third level header
-
-Here's an even lower level header
-
-# My second post (note the order)
-
-2018 | 7 | 23 Last compiled: `r Sys.Date()`
-
-I'm writing this tutorial going from the top down. And, this is how it will be printed. So, notice the second post is second in the list. If you want your most recent post to be at the top, then make a new post starting at the top. If you want the oldest first, do, then keep adding to the bottom
-
-# Adding R stuff
-
-So far this is just a blog where you can write in plain text and serve your writing to a webpage. One of the main purposes of this lab journal is to record your progress learning R. The reason I am asking you to use this process is because you can both make a website, and a lab journal, and learn R all in R-studio. This makes everything really convenient and in the sam place. 
-
-So, let's say you are learning how to make a histogram in R. For example, maybe you want to sample 100 numbers from a normal distribution with mean = 0, and standard deviation =1, and then you want to plot a histogram. You can do this right here by using an r code block, like this:
-
-```{r}
-samples <- rnorm(100, mean=0, sd=1)
-hist(samples)
-```
-
-When you knit this R Markdown document, you will see that the histogram is printed to the page, along with the R code. This document can be set up to hide the R code in the webpage, just delete the comment (hashtag), from the cold folding option in the yaml header up top. For purposes of letting yourself see the code, and me see the code, best to keep it the way that it is. You learn all of these things and more can be customized in each R code block.
-
-# The big idea
-
-Use this lab journal to record what you do in R. This way I will be able to see what you are doing and help you along the way. You will also be creating a repository of all the things you do. You can make posts about everything. Learning specific things in R (project unrelated), and doing things for the project that we will discuss at the beginning of the Fall semester. You can get started now by fiddling around with googling things, and trying stuff out in R. I've placed some helpful starting links in the links page on this website
-
-# What can you do right now by yourself?
-
-It's hard to learn programming when you don't have specific problems that you are trying to solve. Everything just seems abstract.
-
-I wrote an [introductory programming book that introduces R](https://crumplab.github.io/programmingforpsych/), and gives some [concrete problems for you to solve](https://crumplab.github.io/programmingforpsych/programming-challenges-i-learning-the-fundamentals.html). 
-
-To get the hang of journaling and solving the problems to learn programming, my suggestion is that you use this .Rmd file to solve the problems. It would look like this:
-
-# Problem 1
-
-Do simple math with numbers, addition, subtraction, multiplication, division
-
-```{r}
-1+2
-2*5
-5/3
-(1+6+4)/5
+grid.arrange(x1, p, q, layout_matrix = lay)
+ 
 
 ```
 
-# Problem 2
 
-Put numbers into variables, do simple math on the variables
+The top plot in figure 1. is a time-series of electricity consumption in France. The bottom two plots show a SARIMAX model predicting energy consumption in 2019 vs 2020, having been trained on the previous 4 years worth of data. Table 1 shows the accuracy of this model on various European countries. The methodology behind this is explained in Appendix 4.1. 
 
-```{r}
-a<-1
-b<-2
-a+b
+The objective of this plot and table is to illustrate the predictability of electricity consumption data during a normal year vs a pandemic enduced year. The change is clearly picked up in the drastic changes in accuracy shown in table 1. Electricity consumption can be attributed to weather, seasonality, business cycles & base load. Weather and seasonality are in present moment indicators. The temperature causes one to use heating and cooling measures. Seasonality will effect the duration of lighting usage. Business cycles and base load (level of business activity) can be presumptiously reactive to conditions unlike weather and seasonality which are reactive in the moment. Hence, electricity consumption attributed to business cycles and base load can be a forward looking indicator into economic activity.
 
-d<-c(1,2,3)
-e<-c(5,6,7)
-d+e
-d*e
-d/e
-
-```
-
-# Problem 3
-
-Write code that will place the numbers 1 to 100 separately into a variable using for loop. Then, again using the seq function.
-
-```{r}
-# for loop solution
-# i becomes the number 1 to 100 at each step of the loop
+When diving into the plots individually of each country, it is clear that electricity consumption is reactive to policy changes. Using France as an example, their full lockdown began 12 weeks into 2020 and ended in week 20. The bottom right plot in figure 1 shows the forecast is almost perfectly out of place between week 12 and 20, before lining up again with the actual consumption. 
 
 
-a <- length(100) # make empty variable, set length to 100
-for (i in 1:100){
-  a[i] <-i #assigns the number in i, to the ith index of a
-}
-
-print(a)
-
-# for loop solution #2
-
-a<-c() #create empty variable using combine command
-for (i in 1:100){
-  a<-c(a,i) # keeps combining a with itself and the new number in i
-}
-print(a)
-
-# seq solution
-a <- seq(1,100,1) # look up help for seq using ?seq() in console
-print(a)
-
-```
-
-# Replace this with problem 4
-
-And keep going. Try to solve the problems with different scripts that provide the same solution. Good luck, Happy coding.
+\begin{table}[!htbp] \centering 
+  \caption{Accuracy of SARIMAX on various countries}
+  \label{tab:my-table}
+\begin{tabular}{llllll}
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & ME & RMSE & MAE & MPE & MAPE \\
+\hline \\[-1.8ex] 
+FRANCE TEST 2019 & -2925.663 & 90265.63 & 70169.87 & -0.4553922 & 5.26192 \\
+FRANCE TEST 2020 & -107436.7 & 143925.8 & 114499.1 & -9.782641 & 10.21085 \\
+GERMANY TEST 2019 & 610927.5 & 672348.8 & 649246.9 & 11.0203 & 11.92293 \\
+GERMANY TEST 2020 & -264620.9 & 407832.7 & 318019.9 & -5.713203 & 6.627528 \\
+SPAIN TEST 2019 & 6880.948 & 49946.31 & 40349.3 & 0.4713497 & 5.799492 \\
+SPAIN TEST 2020 & -50412.72 & 68669.14 & 58031.49 & -8.72553 & 9.714945 \\
+UNITED KINGDOM 2019 & 7891.58 & 90497.34 & 62057.25 & 0.07401255 & 4.054127 \\
+UNITED KINGDOM 2020 & -128479.9 & 172001.5 & 138371.7 & -9.760755 & 10.28156 \\
+SWEDEN 2019 & -580.2107 & 26802.2 & 21601.13 & -0.7898409 & 5.681146 \\
+SWEDEN 2020 & -16267.63 & 27859.37 & 21362.1 & -4.376811 & 5.734472 \\
+ITALY 2019 &  90675.5 & 105149.6 & 95438.57 & 10.63521 & 11.47715 \\
+ITALY 2020 &  91497.45 & 136313.6 & 115616.3 & 11.01898 & 15.24938 \\
+\hline \\[-1.8ex] 
+\end{tabular}
+\end{table}

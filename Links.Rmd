@@ -3,9 +3,6 @@ title: "References"
 output: html_document
 ---
 
-
-# References 
-
 1. IEA (2020), Monthly electricity statistics, IEA, Paris [IEA](https://www.iea.org/reports/monthly-electricity-statistics)
 
 2. Bureau of Meteorology (2020), Australian climate variability & change - Time series graphs

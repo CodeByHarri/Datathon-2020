@@ -1,6 +1,6 @@
-name: "MyLabJournal"
+name: "Datathon 2020"
 navbar:
-  title: "MyLabJournal"
+  title: "Datathon 2020"
   left:
     - text: "Home"
       href: index.html

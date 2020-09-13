@@ -31,7 +31,7 @@ Analyse electricity consumption data and determine if a change can be detected t
 </div>
 <div class="col-sm-6">
 
-### [Melbourne Datathon 2020](http://www.datasciencemelbourne.com/datathon/)
+### [Melbourne Datathon 2020 Submission By Harri Somakanthan](http://www.datasciencemelbourne.com/datathon/)
 
 <a href = "https://codebyharri.github.io/Datathon-2020-Electricity-Consumption-Patterns/index.html">
 ![](images/homelogo.png)
