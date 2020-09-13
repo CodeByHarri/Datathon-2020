@@ -1,5 +1,4 @@
 ---
-title: "InteractivePlots"
 output:
   html_document:
     toc: false
@@ -95,13 +94,10 @@ aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, str
 aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
 aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
 aus = aus %>% filter(TOTALDEMAND > 10000)
-
-
-setwd("ausdata/VIC/")
-temp = list.files(pattern="*.csv")
-
+# setwd("ausdata/VIC/")
+temp = list.files("ausdata/VIC/",pattern="*.csv")
 for (i in 1:length(temp)){
-  ausx = read.csv(temp[i], header = TRUE, stringsAsFactors = FALSE)
+  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
@@ -110,12 +106,33 @@ for (i in 1:length(temp)){
   aus = rbind(aus, ausx)
 }
 
-# aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
+finalaus = aus
+aus = read.csv("ausdata/NSW/PRICE_AND_DEMAND_201801_NSW1.csv", header =TRUE, stringsAsFactors = FALSE)
+aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+aus = aus %>% filter(TOTALDEMAND > 10000)
+
+temp = list.files("ausdata/NSW/",pattern="*.csv")
+for (i in 1:length(temp)){
+  ausx = read.csv(paste0("ausdata/NSW/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+  ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+  ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+  ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+  # namex =  gsub('PRICE_AND_DEMAND_', '', temp[i])
+  # namex =  gsub('_VIC1.csv', '', namex)
+  aus = rbind(aus, ausx)
+}
+
+aus$NSW = aus$TOTALDEMAND
+aus$VIC = finalaus$TOTALDEMAND
+aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
+
+auswide = gather(aus, state, load, NSW:VIC, factor_key=TRUE)
 
 
 p <- plot_ly() %>%
-  add_trace( data = aus, x = ~SETTLEMENTDATE, y = ~TOTALDEMAND, type = 'scatter', 
-             mode = 'lines', alpha = 0.5)
+  add_trace( data = auswide, x = ~SETTLEMENTDATE, y = ~load, type = 'scatter',
+             mode = 'lines', color = ~as.factor(state))
 p <- plotly_build(p)
 
 p = p %>% layout(title = 'Energy Consumption in Australia',
@@ -132,3 +149,20 @@ p = p %>%
 p
 
 ```
+
+
+
+
+
+
+# Things to do tomorrow night: 
+
+- make the SARIMAX for Australian data. 
+- show the latex table on the analysis between VICTORIA and NEW SOUTH WALES 
+
+
+look into:
+  - mutiple change points
+  - chain point analysis
+  - intervention analysis 
+

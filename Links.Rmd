@@ -8,7 +8,9 @@ output: html_document
 2. Bureau of Meteorology (2020), Australian climate variability & change - Time series graphs
 [BoM](http://www.bom.gov.au/climate/change/index.shtml#tabs=Tracker&tracker=timeseries&tQ=graph%3Drain%26area%3Daus%26season%3Dallmonths%26ave_yr%3DT)
 
-3. ENTSO-E Transparency Platform (2020). Western Europe Consumption data [ENTSO-E Transparency](https://transparency.entsoe.eu/)
+3. ENTSO-E Transparency Platform (2020). Western Europe Consumption Data. [ENTSO-E Transparency](https://transparency.entsoe.eu/)
 [Kaggle Data Source](https://www.kaggle.com/francoisraucent/western-europe-power-consumption?select=it.csv)
 
-4. Hyndman, R. J., & Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. Journal of Statistical Software, 27(1), 1–22. https://doi.org/10.18637/jss.v027.i03
+4. AEMO 2020. Aggregated price and demand data. [AEMO Australian Data](https://aemo.com.au/energy-systems/electricity/national-electricity-market-nem/data-nem/aggregated-data)
+
+5. Hyndman, R. J., & Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. Journal of Statistical Software, 27(1), 1–22. https://doi.org/10.18637/jss.v027.i03
