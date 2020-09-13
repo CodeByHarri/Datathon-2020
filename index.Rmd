@@ -1,5 +1,5 @@
 ---
-title: "MyLabJournal"
+title: "Datathon 2020"
 output: html_document
 ---
 
@@ -17,27 +17,23 @@ output: html_document
 <div class="row" style="padding-top: 30px;">
 <div class="col-sm-6">
 
-# **My Lab Journal**
 
-This is a template example for lab journaling. Students in Matt Crump's Human Cognition and Performance Lab will use this template to learn R, and other things. Students can replace this text with more fun things. People not in my lab can use this too.
+# **Introduction**
 
-## How to use
+Electricity consumption can be seen as a potential data source which can act as a creative supplement to traditional models for a wide variety of business problems. In this report I will be exploring electricity consumption in Australia and its potential to forecast. It is known many economic indicators are backwards looking, which poses risk where prompt decisions are required. Exploration into electricity consumption may provide a forward looking insight, this will help build better indicators as it can act as a proxy for economic activity.
 
-1. fork the repo for this website and follow instructions on read me to get set up. [https://github.com/CrumpLab/LabJournalWebsite](https://github.com/CrumpLab/LabJournalWebsite)
+# **Objective**
 
-2. Blog/journal what you are doing in R, by editing the Journal.Rmd. See the [Journal page](https://crumplab.github.io/LabJournalWebsite/Journal.html) for an example of what to do to get started learning R.
+Analyse electricity consumption data and determine if a change can be detected that may be attributable to COVID-19.
 
-3. See the [links page](https://crumplab.github.io/LabJournalWebsite/Links.html) for lots of helpful links on learning R.
-
-4. Change everything to make it your own.
 
 
 </div>
 <div class="col-sm-6">
 
-### [Crump Lab: Human Cognition and Performance](https://crumplab.github.io)
+### [Melbourne Datathon 2020](http://www.datasciencemelbourne.com/datathon/)
 
-<a href = "https://crumplab.github.io">
-![](images/logo.png)
+<a href = "https://codebyharri.github.io/Datathon-2020-Electricity-Consumption-Patterns/index.html">
+![](images/homelogo.png)
 </a>
 </div>
