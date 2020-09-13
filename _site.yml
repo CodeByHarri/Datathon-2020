@@ -6,6 +6,8 @@ navbar:
       href: index.html
     - text: "Analysis"
       href: Analysis.html
+    - text: "Interactive Plots"
+      href: InteractivePlots.html
     - text: "References"
       href: Links.html
 output_dir: "docs"
