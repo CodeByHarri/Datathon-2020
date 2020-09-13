@@ -3,7 +3,7 @@ title: "Can electricity consumption patterns tell us anything about the pandemic
 author: "By Harri Somakanthan"
 output:
   html_document:
-    toc: true
+    toc: false
     toc_float: true
     collapsed: false
     number_sections: false
@@ -16,10 +16,83 @@ knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 library(ggplot2)
 library(tidyverse)
 library(gridExtra)
+library(dplyr)
+library(plotly)
 ```
 
 
+
 ```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
+
+# fr = read.csv("data/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+# fr$end = fr$end %>% as.Date()
+# fr = aggregate(fr["load"], by=fr["end"], sum)
+# fr = fr[1:(length(fr$load)-1),]
+# fr = fr[(fr$end> "2018-01-01	" & fr$end < "2020-07-30"),]
+# df = fr
+# setwd("data/")
+# temp = list.files(pattern="*.csv")
+# for (i in 1:length(temp)){
+#   fr = read.csv(temp[i], header = TRUE, stringsAsFactors = FALSE)
+#   fr = na.omit(fr)
+#   fr$end = fr$end %>% as.Date()
+#   fr = aggregate(fr["load"], by=fr["end"], sum)
+#   fr = fr[1:(length(fr$load)-1),]
+#   fr = fr[(fr$end> "2018-01-01	" & fr$end < "2020-07-30"),]
+#   fr[,paste0(temp[i])] = fr$load
+#   df = left_join(df, fr, by=c("end"))
+# }
+# df = df[, -grep("load", colnames(df))]
+# colnames(df) = c('end', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+# 
+# dfwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
+# 
+# write.csv(dfwide, 'widedata.csv')
+dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
+dfwide = dfwide[-1]
+```
+
+```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+legendItems <- list(France = TRUE, Italy = "legendonly", Sweden = TRUE)
+
+p <- plot_ly() %>%
+  add_trace( data = dfwide, x = ~end, y = ~load, type = 'scatter', 
+             mode = 'lines', color = ~as.factor(country))
+p <- plotly_build(p)
+
+legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
+
+for(i in seq_along(p$x$data)){
+  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+}
+
+#### LONG FORMAT DATA 
+# fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red") 
+# xy.list <- as.list(as.data.frame((df)))
+# for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']], 
+#                                               name = paste0(i),  type = 'scatter', 
+#                                               mode = 'lines',evaluate = TRUE) }
+
+p = p %>% layout(title = 'Energy Consumption in Western Europe',
+         xaxis = list(title = 'Time'),
+         yaxis = list(title = 'Energy Consumption (MW)'))
+
+p = p %>%
+    layout(xaxis = list(
+        range = 
+            c(as.numeric(as.POSIXct("2018-00-01", format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+        type = "date"))
+
+p
+
+```
+
+
+
+
+```{r fig.cap="Figure 2: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
 fr = read.csv("data/fr.csv", header =TRUE, stringsAsFactors = FALSE)
 fr = na.omit(fr)
 fr$end = fr$end %>% as.Date()
@@ -40,7 +113,6 @@ fcBESTFIT1 = readRDS(file = "data/bf1.rds")
 fcBESTFIT2 = readRDS(file = "data/bf2.rds")
 p = readRDS(file = "data/p.rds")
 q = readRDS(file = "data/q.rds")
-
 
 lay <- rbind(c(1,1,1,1),
              c(2,2,3,3))
