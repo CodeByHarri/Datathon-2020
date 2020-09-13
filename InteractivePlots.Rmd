@@ -15,6 +15,7 @@ library(tidyverse)
 library(dplyr)
 library(plotly)
 library(scales)
+library(forecast)
 ```
 
 
@@ -68,6 +69,9 @@ for (i in 1:length(temp)){
 }
 
 finalaus = aus
+victrain = aus[(aus$SETTLEMENTDATE >= "2018-01-01	" & aus$SETTLEMENTDATE <= "2020-01-01"),]
+victest = aus[(aus$SETTLEMENTDATE >= "2020-01-01	" & aus$SETTLEMENTDATE <= "2020-08-30"),]
+
 aus = read.csv("ausdata/NSW/PRICE_AND_DEMAND_201801_NSW1.csv", header =TRUE, stringsAsFactors = FALSE)
 aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
 aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
@@ -87,7 +91,6 @@ for (i in 1:length(temp)){
 aus$NSW = aus$TOTALDEMAND
 aus$VIC = finalaus$TOTALDEMAND
 aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
-
 auswide = gather(aus, state, load, NSW:VIC, factor_key=TRUE)
 
 
@@ -107,6 +110,48 @@ rainfall$rain = rescale(rainfall$rain, c(min(auswide[auswide$state == 'VIC',]$lo
 rainfall = rainfall[order(as.Date(rainfall$Date, format="%Y/%m/%d")),]
 
 
+
+## Create a daily Date object - helps my work on dates
+# inds <- seq(as.Date("2018-01-01"), as.Date("2020-01-1"), by = "day")
+#
+# ## Create a time series object
+# set.seed(25)
+# myts = ts(victrain$TOTALDEMAND,
+#            start = c(2018, as.numeric(format(inds[1], "%j"))),
+#            frequency = 7)
+# 
+# bestfit <- list(aicc=Inf)
+# # Choose the best model by AICc
+# for(i in 1:3) {
+#   for (j in 1:3){
+#     for (k in 1:3){
+#     z1 <- fourier(ts(myts, frequency=7), K=i)
+#     z2 <- fourier(ts(myts, frequency=365), K=j)
+#     z3 <- fourier(ts(myts, frequency=30), K=k)
+#     fit <- auto.arima(myts, xreg=cbind(z1, z2, z3), seasonal=F)
+#     if(fit$aicc < bestfit$aicc) {
+#       bestfit <- list(aicc=fit$aicc, i=i, j=j, k=k, fit=fit)
+#     }
+#     }
+#   }
+# }
+# 
+# summary(bestfit$fit)
+# fcBESTFIT3 = forecast(bestfit$fit, xreg=cbind(
+#                  fourier(ts(myts, frequency=7), K=bestfit$i, h=242),
+#                  fourier(ts(myts, frequency=365), K=bestfit$j, h=242),
+#                  fourier(ts(myts, frequency=30), K=bestfit$k, h=242)))
+
+
+# saveRDS(fcBESTFIT3, file = "ausdata/bf3.rds")
+fcBESTFIT3 = readRDS(file = "ausdata/bf3.rds")
+
+# SARIMAXpred = data.frame(fcBESTFIT3$mean)
+x = aus[(aus$SETTLEMENTDATE >= "2020-01-02	" & aus$SETTLEMENTDATE <= "2020-08-30"),]
+SARIMAXpred = data.frame(date = x$SETTLEMENTDATE, mean = fcBESTFIT3$mean)
+
+
+
 p <- plot_ly() %>%
   add_trace( data = auswide, x = ~SETTLEMENTDATE, y = ~load, type = 'scatter',
              mode = 'lines', color = ~as.factor(state), colors =c("#e63946", "#415a77"),alpha = 0.7)
@@ -117,6 +162,9 @@ p = p %>% add_trace(data = weather, x = ~Date, y = ~temp, type = 'scatter',line=
 
 p = p %>% add_trace(data = rainfall, x = ~Date, y = ~rain, type = 'scatter',line=list(color='#0077b6',dash='dashed'),
              mode = 'lines', name = 'VIC SCALED RAIN', alpha = 1)
+
+p = p %>% add_trace(data = SARIMAXpred, x = ~date, y = ~mean, type = 'scatter',line=list(color='red',dash='dashed'),
+             mode = 'lines', name = 'VIC SARIMAX', alpha = 1)
 
 p <- plotly_build(p)
 
@@ -132,7 +180,8 @@ p = p %>%
         type = "date"))
 
 
-legendItems <- list(NSW = 'legendonly', VIC = T, `VIC SCALED TEMP` = T, `VIC SCALED RAIN` = 'legendonly')
+legendItems <- list(NSW = 'legendonly', VIC = T, `VIC SCALED TEMP` = T, 
+                    `VIC SCALED RAIN` = 'legendonly', `VIC SARIMAX` = 'legendonly')
 
 for(i in seq_along(p$x$data)){
   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
