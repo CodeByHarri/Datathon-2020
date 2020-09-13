@@ -22,7 +22,7 @@ output: html_document
 
 Electricity consumption can be seen as a potential data source which can act as a creative supplement to traditional models for a wide variety of business problems. In this report I will be exploring electricity consumption in Australia and its potential to forecast. It is known many economic indicators are backwards looking, which poses risk where prompt decisions are required. Exploration into electricity consumption may provide a forward looking insight, this will help build better indicators as it can act as a proxy for economic activity.
 
-# **Objective**
+# **Problem Statement**
 
 Analyse electricity consumption data and determine if a change can be detected that may be attributable to COVID-19.
 
