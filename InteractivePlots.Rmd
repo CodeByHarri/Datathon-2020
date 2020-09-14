@@ -202,7 +202,6 @@ x = aus[(aus$SETTLEMENTDATE >= "2020-01-02	" & aus$SETTLEMENTDATE <= "2020-08-30
 SARIMAXpred = data.frame(date = x$SETTLEMENTDATE, mean = fcBESTFIT3$mean)
 
 
-
 p <- plot_ly() %>%
   add_trace( data = auswide, x = ~SETTLEMENTDATE, y = ~load, type = 'scatter',
              mode = 'lines', color = ~as.factor(state), colors =c("#e63946", "#415a77"),alpha = 0.7)
@@ -239,9 +238,9 @@ for(i in seq_along(p$x$data)){
 }
 
 
-p <- p %>% layout(xaxis = list(rangeslider = list(type = "date")))
+p = p %>% layout(xaxis = list(rangeslider = list(type = "date")))
 
-vicplot1 = p %>% layout(xaxis = list(range = c('2019-08-01', '2020-08-30')))
+vicplot1 = p # %>% layout(xaxis = list(range = c('2019-08-01', '2020-08-30')))
 
 ```
 
@@ -280,8 +279,7 @@ p = p %>% layout(title = 'Energy Consumption change (%) in Victoria 2020-2019 Ad
          xaxis = list(title = 'Time'),
          yaxis = list(title = 'Change (%)'))
 
-p = p %>%
-    layout(xaxis = list(
+p = p %>% layout(xaxis = list(
         range = c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
               as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
         type = "date"))
