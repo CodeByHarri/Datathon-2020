@@ -198,6 +198,46 @@ Figure 1. titled *'Energy Consumption in Australia'* illustrates a picture that 
 
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+vic2019 = victrain[(victrain$SETTLEMENTDATE >= "2019-01-01	" & victrain$SETTLEMENTDATE <= "2019-08-31"),]
+
+vic2020 = victest
+
+vic2019$week  = strftime(vic2019$SETTLEMENTDATE ,"%V")
+vic2019$day  = strftime(vic2019$SETTLEMENTDATE, "%u")
+vic2020$week  = strftime(vic2020$SETTLEMENTDATE ,"%V")
+vic2020$day  = strftime(vic2020$SETTLEMENTDATE, "%u")
+
+vicdata = merge(vic2019, vic2020, by=c("week","day")) # NA's match
+
+vicdata$diff = vicdata$TOTALDEMAND.x - vicdata$TOTALDEMAND.y
+
+p = plot_ly() %>%
+  add_trace( data = vicdata, x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+             mode = 'lines',  color ="#e63946",alpha = 0.7)
+
+p = plotly_build(p)
+
+p = p %>% layout(title = 'Energy Consumption in 2020 Victoria Difference with 2019 Adjusted for Seasonality',
+         xaxis = list(title = 'Time'),
+         yaxis = list(title = 'Energy Consumption (MW)'))
+
+p = p %>%
+    layout(xaxis = list(
+        range = c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
+        type = "date"))
+
+p
+
+```
+
+
+
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
 dfwide = dfwide[-1]
 p <- plot_ly() %>%
