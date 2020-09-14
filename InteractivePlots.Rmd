@@ -238,14 +238,14 @@ for(i in seq_along(p$x$data)){
   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
 }
 
-p
+
+p <- p %>% layout(xaxis = list(rangeslider = list(type = "date")))
+
+vicplot1 = p %>% layout(xaxis = list(range = c('2019-08-01', '2020-08-30')))
 
 ```
 
-Figure 1. titled *'Energy Consumption in Australia'* illustrates a picture that helps us answer the question, **'What attributes to the rise and fall of electricty consumption?'** Let's take a look at Victoria. Figure 1, shows the scaled temperature closely follows the trend of electricity consumption, however, poorly indicates winter months. This is due to consumers increasing usage of cooling & heating products during the summer & winter respectively. Hence, the winter temperature would be inversly correlated with the consumption. We can see that scaled rainfall more accurately fits the seasonality of electricity consumption. This maybe attributed to rainfall occuring during winter months and can far better illustrate the effects of heating and coolings impacts on the electricity consumption. Lastly, a SARIMAX model trained on January 2018 to December 2018 forecasting 2020 is pictured above. We can see the model accurately fits the bottoms of the weekly seasonality however, fails to caputure the high peaks within the first coulple weeks. Taking a look at the weekly seasonality it can be seen that the higher peaks tend to occur during the ends of the week and bottoms occur on a Sunday. 
-
-  * Things to look into % change compared to last year? 
-
+Figure 2. titled *'Energy Consumption in Australia'* illustrates a picture that helps us answer the question, **'What attributes to the rise and fall of electricty consumption?'** Let's take a look at Victoria. Figure 2, shows the scaled temperature closely follows the trend of electricity consumption, however, poorly indicates winter months. This is due to consumers increasing usage of cooling & heating products during the summer & winter respectively. Hence, the winter temperature would be inversly correlated with the consumption. We can see that scaled rainfall more accurately fits the seasonality of electricity consumption. This maybe attributed to rainfall occuring during winter months and can far better illustrate the effects of heating and coolings impacts on the electricity consumption. Lastly, a SARIMAX model trained on January 2018 to December 2018 forecasting 2020 is pictured above. We can see the model accurately fits the bottoms of the weekly seasonality however, fails to caputure the high peaks within the first coulple weeks. Taking a look at the weekly seasonality it can be seen that the higher peaks tend to occur during the ends of the week and bottoms occur on a Sunday. The orange line shows the % difference between 2020 and 2019. This shows higher volatility during the first weeks of the year before plateauing.
 
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
@@ -268,7 +268,7 @@ vicdata$diff = (vicdata$TOTALDEMAND.y /vicdata$TOTALDEMAND.x)*100 - 100
 
 p = plot_ly() %>%
   add_trace( data = vicdata, x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
-             mode = 'lines',  color ="#e63946", name = 'Difference', alpha = 0.7)
+             mode = 'lines',  color ="#e63946", name = '% Difference \nbetween \n2020 & 2019', alpha = 0.7)
 
 # p = p %>% add_trace(data = melbrain, x = ~Date, y = ~rain, type = 'scatter',line=list(color='#0077b6',dash='dashed'),
 #              mode = 'lines', name = 'VIC SCALED RAIN', alpha = 1)
@@ -285,9 +285,11 @@ p = p %>%
         range = c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
               as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
         type = "date"))
+vicplot2 = p 
 
-p
 
+
+subplot(vicplot1, vicplot2, nrows=2,  shareX = TRUE) %>% layout(xaxis = list(range = c('2020-01-01', '2020-08-30')))
 ```
 
 
