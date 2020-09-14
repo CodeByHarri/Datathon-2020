@@ -96,7 +96,7 @@ auswide = gather(aus, state, load, NSW:VIC, factor_key=TRUE)
 
 weather = read.csv(paste0("ausdata/vicweather.csv"), header = TRUE, stringsAsFactors = FALSE)
 weather = gather(weather, Month, temp, Jan:Dec, factor_key=TRUE)
-weather$Date = as.Date(with(weather, paste(Year, Month,'1',sep="-")), "%Y-%b-%d")
+weather$Date = as.Date(with(weather, paste(Year, Month,'30',sep="-")), "%Y-%b-%d")
 weather = weather[(weather$Date >= "2018-01-01	" & weather$Date <= "2020-08-30"),]
 weather$temp = rescale(weather$temp, to=c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
 weather = weather[order(as.Date(weather$Date, format="%Y/%m/%d")),]
@@ -104,7 +104,7 @@ weather = weather[order(as.Date(weather$Date, format="%Y/%m/%d")),]
 
 rainfall = read.csv(paste0("ausdata/vicrainfall.csv"), header = TRUE, stringsAsFactors = FALSE)
 rainfall = gather(rainfall, Month, rain, Jan:Dec, factor_key=TRUE)
-rainfall$Date = as.Date(with(rainfall, paste(Year, Month,'1',sep="-")), "%Y-%b-%d")
+rainfall$Date = as.Date(with(rainfall, paste(Year, Month,'30',sep="-")), "%Y-%b-%d")
 rainfall = rainfall[(rainfall$Date >= "2018-01-01	" & rainfall$Date <= "2020-08-30"),]
 rainfall$rain = rescale(rainfall$rain, c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
 rainfall = rainfall[order(as.Date(rainfall$Date, format="%Y/%m/%d")),]
@@ -190,6 +190,11 @@ for(i in seq_along(p$x$data)){
 p
 
 ```
+
+Figure 1. titled *'Energy Consumption in Australia'* illustrates a picture that helps us answer the question, **'What attributs to the rise and fall of electricty consumption?'** Let's take a look at Victoria. Figure 1, shows the scaled temperature closely follows the trend of electricity consumption, however, poorly indicates winter months. This is due to consumers increasing usage of cooling & heating products during the summer & winter respectively. Hence, the winter temperature would be inversly correlated with the consumption. We can see that scaled rainfall more accurately fits the seasonality of electricity consumption. This maybe attributed to rainfall occuring during winter months and can far better illustrate the effects of heating and coolings impacts on the electricity consumption. Lastly, a SARIMAX model trained on January 2018 to December 2018 forecasting 2020 is pictured above. We can see the model accurately fits the bottoms of the weekly seasonality however, fails to caputure the high peaks within the first coulple weeks. Taking a look at the weekly seasonality it can be seen that the higher peaks tend to occur during the ends of the week and bottoms occur on a Sunday. 
+
+  * Things to look into % change compared to last year? 
+
 
 
 ```{r fig.cap="Figure 1: European Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
