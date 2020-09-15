@@ -2,13 +2,15 @@
 title: "Can electricity consumption patterns tell us anything about the pandemic?"
 author: "By Harri Somakanthan"
 output:
-  html_document:
+  html_document: 
     toc: false
     toc_float: true
     collapsed: false
     number_sections: false
     toc_depth: 1
     #code_folding: hide
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -18,6 +20,7 @@ library(tidyverse)
 library(gridExtra)
 library(dplyr)
 library(plotly)
+library(itertools)
 ```
 
 
@@ -99,7 +102,7 @@ fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
 fr = na.omit(fr)
 fr$end = fr$end %>% as.Date()
 fr = aggregate(fr["load"], by=fr["end"], sum)
-fr = fr[1:(length(fr$load)-1),] 
+fr = fr[1:(length(fr$load)-1),]
 TRAIN2015TO2018 = fr[(fr$end> "2015-01-01	" & fr$end < "2018-12-31"),]
 TEST2017 = fr[(fr$end> "2017-01-01" & fr$end < "2017-07-30"),]
 TEST2018 = fr[(fr$end> "2018-01-01" & fr$end < "2018-07-30"),]
@@ -131,7 +134,6 @@ The objective of this plot and table is to illustrate the predictability of elec
 
 When diving into the plots individually of each country, it is clear that electricity consumption is reactive to policy changes. Using France as an example, their full lockdown began 12 weeks into 2020 and ended in week 20. The bottom right plot in figure 1 shows the forecast is almost perfectly out of place between week 12 and 20, before lining up again with the actual consumption. 
 
-
 \begin{table}[!htbp] \centering 
   \caption{Accuracy of SARIMAX on various countries}
   \label{tab:my-table}
@@ -155,3 +157,263 @@ ITALY 2020 &  91497.45 & 136313.6 & 115616.3 & 11.01898 & 15.24938 \\
 \hline \\[-1.8ex] 
 \end{tabular}
 \end{table}
+
+
+
+# Duck Curve
+
+
+
+
+
+
+```{r fig.cap="Figure 2: Descriptive Plots" , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+fr = na.omit(fr)
+fr$hour = substr(fr$end,11,nchar(fr$end)-12)
+fr$year = substr(fr$end,1,nchar(fr$end)-21)
+fr  = aggregate(load ~ hour + year, data = fr, mean)
+df = fr
+setwd("eurodata/")
+temp = list.files(pattern="*.csv")
+for (i in 1:length(temp)){
+  fr = read.csv(temp[i], header =TRUE, stringsAsFactors = FALSE)
+  fr = na.omit(fr)
+  fr$hour = substr(fr$end,11,nchar(fr$end)-12)
+  fr$year = substr(fr$end,1,nchar(fr$end)-21)
+  fr  = aggregate(load ~ hour + year, data = fr, mean)
+  fr[,paste0(temp[i])] = fr$load
+  df = left_join(df, fr, by=c("hour","year"))
+}
+df = df[, -grep("load", colnames(df))]
+colnames(df) = c('hour','year', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+
+eurohourwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
+eurohourwide = eurohourwide[-3] 
+
+country = c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+
+
+# build up interactive element, the filter to the two groups
+button_list <- lapply(1:length(country), function(x){
+  list(method = "restyle",
+       args = list("transforms[0].value", country[x]),
+       label = country[x])
+})
+
+# fr = read.csv("fr.csv", header =TRUE, stringsAsFactors = FALSE)
+# fr = na.omit(fr)
+# fr$hour = substr(fr$end,11,nchar(fr$end)-12)
+# fr$year = substr(fr$end,1,nchar(fr$end)-21)
+# fr  = aggregate(load ~ hour + year, data = fr, mean)
+
+
+p <- plot_ly(data = eurohourwide, x = ~hour, y = ~load, type = 'scatter', text = ~year, hoverinfo =~as.factor(year),
+             mode = 'markers',  marker = list(color = ~as.factor(year), size = 8, opacity = 0.8),
+             # color = ~as.factor(year), alpha = 0.7, 
+             transforms = list( list(
+                            type = 'filter',
+                            # groups = eurohourwide$country
+                            target = ~country,
+                            operation = '=',
+                            value = unique(eurohourwide$country)[1]
+      ))) %>% layout(
+        title = paste0('Intraday Energy Consumption'),
+         xaxis = list(title = 'Hour of Day'),
+         yaxis = list(title = 'MW of Energy'),
+    updatemenus = list(
+      list(
+        type = 'dropdown',
+        active = 0,
+        buttons = button_list
+          
+          # list(
+          # list(method = "restyle",
+          #      args = list("transforms[0].value", unique(eurohourwide$country)[1]),
+          #      label = unique(eurohourwide$country)[1]),
+          # list(method = "restyle",
+          #      args = list("transforms[0].value", unique(eurohourwide$country)[2]),
+          #      label = unique(eurohourwide$country)[2]),
+          # list(method = "restyle",
+          #      args = list("transforms[0].value", unique(eurohourwide$country)[3]),
+          #      label = unique(eurohourwide$country)[3])
+        )
+      )
+    )
+  
+p <- plotly_build(p)
+
+# p = p %>% layout(title = 'Intraday Energy Consumption',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'MW of Energy'))
+p
+
+
+# # build up interactive element, the filter to the two groups
+# button_list <- lapply(1:length(country), function(x){
+#   list(method = "restyle",
+#        args = list("transforms[0].value", country[x]),
+#        label = country[x])
+# })
+# 
+# type_list <-  list(
+#   type = 'dropdown',
+#   active = 0,
+#   xanchor = 'center',
+#   yanchor = "top",
+#   pad = list('r'= 0, 't'= 10, 'b' = 10),
+#   x = 0.5,
+#   y = 1.27,
+#   buttons = button_list
+# )
+# 
+# # make plot, color based on the individual in the group
+# plot_ly(eurohourwide, x = ~hour, y = ~load, mode = "markers",
+#         color = ~as.factor(year), 
+#         # colors = brewer.pal(3, "Set1"),
+#         hoverinfo = "text", text = ~paste(year),
+#         transforms = list(
+#           list(
+#             type = 'filter',
+#             target = ~country,
+#             operation = '=',
+#             value = eurohourwide$country[1]
+#           ))
+#         ) %>%
+#           layout(updatemenus = list(
+#                    type_list
+#                  ))
+
+```
+
+
+
+
+
+
+
+```{r, echo=FALSE,}
+# sample(2009:2011, 150, replace=TRUE)
+# set.seed(42)
+# iris$year <- sample(2009:2011, 150, replace=TRUE) #MAKING FAKE YEAR DATA
+# 
+# p <- iris %>%
+#   plot_ly(
+#     type = 'scatter', 
+#     x = ~Sepal.Length, 
+#     y = ~Petal.Length,
+#     color = ~as.factor(year), # GROUPING BY YEAR
+#     ####### SAMPLE SOLUTION ########
+#     # marker = list(color = ~as.factor(year), size = 8, opacity = 0.8),
+#     text = ~Species, # ADDED THIS TO ILLUSTRATE THAT THERE WRONG DATA IN THE TRANSFORMATION
+#     mode = 'markers', # IN MY EXAMPLE IM USING LINES, IT DOESNT MAKE SENSE TO USE IT HERE SO IM LEAVING IT AS MARKERS
+#     transforms = list(
+#       list(
+#         type = 'filter',
+#         target = ~Species,
+#         operation = '=',
+#         value = unique(iris$Species)[1]
+#       )
+#   )) %>% layout(
+#     updatemenus = list(
+#       list(
+#         type = 'dropdown',
+#         active = 0,
+#         buttons = list(
+#           list(method = "restyle",
+#                args = list("transforms[0].value", unique(iris$Species)[1]),
+#                label = unique(iris$Species)[1]),
+#           list(method = "restyle",
+#                args = list("transforms[0].value", unique(iris$Species)[2]),
+#                label = unique(iris$Species)[2]),
+#           list(method = "restyle",
+#                args = list("transforms[0].value", unique(iris$Species)[3]),
+#                label = unique(iris$Species)[3])
+#         )
+#       )
+#     )
+#   )
+# 
+# p
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r shinyapp, echo=FALSE}
+# 
+# library(shiny)
+# # Rely on the 'WorldPhones' dataset in the datasets
+# # package (which generally comes preloaded).
+# library(datasets)
+# 
+# ui <- fluidPage(
+#   headerPanel("Intraday Energy Consumption"),
+#   sidebarPanel(
+#     selectInput('country','Country', c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')),
+#     selected = 'Sweden'),
+#   mainPanel(
+#     plotlyOutput('plot')
+#   )
+# )
+# 
+# server <- function(input, output) {
+#   
+#   
+#   d <- reactive({
+#     eurohourwide %>% filter(country == input$country)
+#     
+#     
+#   })
+#   
+#   
+#   output$plot <- renderPlotly(
+#     plot1 <-  plot_ly() %>% add_trace( data = d(), x = ~hour, y = ~load, type = 'scatter',
+#              mode = 'lines', color = ~as.factor(year), alpha = 0.7) %>% 
+#       layout(title = paste0('Intraday Energy Consumption in ',input$country),
+#          xaxis = list(title = 'Hour of Day'),
+#          yaxis = list(title = 'MW of Energy'))
+#     
+#   )
+# 
+# }
+# 
+# 
+# deps = lapply(extensions, extDependency) 
+#  if (filter != 'none') deps = c(deps, filterDependencies()) 
+#  htmlwidgets::createWidget( 
+#    'datatables', params, package = 'shiny', width = '100%', height = 'auto', 
+#    dependencies = deps 
+#  ) 
+# 
+# 
+# shinyApp(ui,server, options = list(height = 500))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

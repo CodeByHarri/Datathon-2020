@@ -10,3 +10,6 @@ stringr
 forcats
 gridExtra
 plotly
+iterators
+itertools
+shiny
