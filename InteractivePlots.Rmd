@@ -275,7 +275,8 @@ p = plot_ly() %>%
 
 p = plotly_build(p)
 
-p = p %>% layout(title = 'Energy Consumption change (%) in Victoria 2020-2019 Adjusted for Seasonality',
+p = p %>% layout(dragmode = 'pan',
+  title = 'Energy Consumption change (%) in Victoria 2020-2019 Adjusted for Seasonality',
          xaxis = list(title = 'Time'),
          yaxis = list(title = 'Change (%)'))
 

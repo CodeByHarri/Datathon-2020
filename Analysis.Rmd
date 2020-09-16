@@ -190,6 +190,7 @@ eurohourwide = eurohourwide[-3]
 
 country = c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
 
+eurohourwide <- eurohourwide[order(eurohourwide$year), ]
 
 # build up interactive element, the filter to the two groups
 button_list <- lapply(1:length(country), function(x){
@@ -206,11 +207,10 @@ button_list <- lapply(1:length(country), function(x){
 
 
 p <- plot_ly(data = eurohourwide, x = ~hour, y = ~load, type = 'scatter', text = ~year, hoverinfo =~as.factor(year),
-             mode = 'markers',  marker = list(color = ~as.factor(year), size = 8, opacity = 0.8),
-             # color = ~as.factor(year), alpha = 0.7, 
+             mode = 'lines', 
+             color = ~as.factor(year), alpha = 0.7,
              transforms = list( list(
                             type = 'filter',
-                            # groups = eurohourwide$country
                             target = ~country,
                             operation = '=',
                             value = unique(eurohourwide$country)[1]
@@ -228,17 +228,6 @@ p <- plot_ly(data = eurohourwide, x = ~hour, y = ~load, type = 'scatter', text =
         type = 'dropdown',
         active = 0,
         buttons = button_list
-          
-          # list(
-          # list(method = "restyle",
-          #      args = list("transforms[0].value", unique(eurohourwide$country)[1]),
-          #      label = unique(eurohourwide$country)[1]),
-          # list(method = "restyle",
-          #      args = list("transforms[0].value", unique(eurohourwide$country)[2]),
-          #      label = unique(eurohourwide$country)[2]),
-          # list(method = "restyle",
-          #      args = list("transforms[0].value", unique(eurohourwide$country)[3]),
-          #      label = unique(eurohourwide$country)[3])
         )
       )
     )
@@ -248,49 +237,26 @@ p <- plotly_build(p)
 # p = p %>% layout(title = 'Intraday Energy Consumption',
 #          xaxis = list(title = 'Time'),
 #          yaxis = list(title = 'MW of Energy'))
-p
+p %>% layout(select = 'Italy')
 
 
-# # build up interactive element, the filter to the two groups
-# button_list <- lapply(1:length(country), function(x){
-#   list(method = "restyle",
-#        args = list("transforms[0].value", country[x]),
-#        label = country[x])
-# })
-# 
-# type_list <-  list(
-#   type = 'dropdown',
-#   active = 0,
-#   xanchor = 'center',
-#   yanchor = "top",
-#   pad = list('r'= 0, 't'= 10, 'b' = 10),
-#   x = 0.5,
-#   y = 1.27,
-#   buttons = button_list
-# )
-# 
-# # make plot, color based on the individual in the group
-# plot_ly(eurohourwide, x = ~hour, y = ~load, mode = "markers",
-#         color = ~as.factor(year), 
-#         # colors = brewer.pal(3, "Set1"),
-#         hoverinfo = "text", text = ~paste(year),
-#         transforms = list(
-#           list(
-#             type = 'filter',
-#             target = ~country,
-#             operation = '=',
-#             value = eurohourwide$country[1]
-#           ))
-#         ) %>%
-#           layout(updatemenus = list(
-#                    type_list
-#                  ))
 
 ```
 
 
 
 <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+
+
+# Testing location based html
+
+
+```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+```
+
+
+
 
 
 

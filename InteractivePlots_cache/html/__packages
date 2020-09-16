@@ -12,3 +12,6 @@ gridExtra
 plotly
 scales
 forecast
+iterators
+itertools
+shiny
