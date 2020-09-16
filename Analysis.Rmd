@@ -253,7 +253,7 @@ p
 A quick look into anomalous number patterns in 2020 electricty load data in Western Europe  
 
 
-### 2020
+### Benfords law on Electricity Load 2020 VS 2019 In Western Europe
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 library(benford.analysis)
@@ -361,7 +361,7 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
             yaxis2 = list(showticklabels = F), yaxis4 = list(showticklabels = F), 
             xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
     add_annotations(
-        text = "First Digit in Load",
+        text = "First Digit in Hourly Load",
         x = 0.5,
         y = 0,
         yref = "paper",
@@ -371,18 +371,6 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
         yshift = -35,
         showarrow = FALSE,
         font = list(size = 15)
-    )  %>%
-    add_annotations(
-        text = "Benfords law on Electricity Load 2020 VS 2019 In Western Europe",
-        x = 0.5,
-        y = 1,
-        yref = "paper",
-        xref = "paper",
-        xanchor = "center",
-        yanchor = "bottom",
-        yshift = 15,
-        showarrow = FALSE,
-        font = list(size = 25)
     ) 
 #%>% layout(title= "Benfords Law")
 
