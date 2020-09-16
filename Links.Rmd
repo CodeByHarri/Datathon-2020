@@ -1,6 +1,8 @@
 ---
 title: "References"
-output: html_document
+output: 
+  html_document:
+    theme: flatly
 ---
 
 1. IEA (2020), Monthly electricity statistics, IEA, Paris [IEA](https://www.iea.org/reports/monthly-electricity-statistics)

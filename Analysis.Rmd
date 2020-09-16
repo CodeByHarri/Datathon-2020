@@ -4,11 +4,12 @@ author:
 output:
   html_document: 
     toc: false
+    theme: flatly
     toc_float: true
-    collapsed: false
+    collapsed: true
     number_sections: false
     toc_depth: 1
-    #code_folding: hide
+    # code_folding: hide
 editor_options: 
   chunk_output_type: inline
 ---

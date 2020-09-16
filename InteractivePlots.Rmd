@@ -1,6 +1,7 @@
 ---
 output:
   html_document:
+    theme: flatly
     toc: false
     toc_float: true
     collapsed: false
@@ -162,9 +163,9 @@ rainfall = rainfall[order(as.Date(rainfall$Date, format="%Y/%m/%d")),]
 
 
 
-## Create a daily Date object - helps my work on dates
+# # Create a daily Date object - helps my work on dates
 # inds <- seq(as.Date("2018-01-01"), as.Date("2020-01-1"), by = "day")
-#
+# 
 # ## Create a time series object
 # set.seed(25)
 # myts = ts(victrain$TOTALDEMAND,
