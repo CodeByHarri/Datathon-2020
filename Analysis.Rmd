@@ -270,6 +270,17 @@ trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "
 # trendsdiff = benford(eurodiff$load, number.of.digits = 1, discrete = T, sign = "positive") 
 
 
+trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits, 
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
+trends2019$data = trends2019$data %>% mutate(bl=recode(data.digits, 
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
+trends2020$s.o.data = trends2020$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+trends2019$s.o.data = trends2019$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
 # 
 # ggdiff1 = ggplot(trendsdiff$data,aes(x = data.digits, fill = data.digits)) + 
 #   geom_bar(position = "identity", fill = "#63FF83") + 
@@ -283,23 +294,28 @@ trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "
 
 gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) + 
   geom_bar(position = "identity", fill = "#90e0ef") + 
-  theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
+  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
+# + labs(title="Benfords Law")
 
 
 gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
   geom_bar(position = "identity", fill = "#90e0ef") + 
-  theme_minimal() + xlab("Second Order First Digit") #+ labs(title="Second Order Benfords Law")
+  theme_minimal() + xlab("Second Order First Digit") + geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+  scale_y_continuous(sec.axis = sec_axis(~. /3))#+ labs(title="Second Order Benfords Law")
 
 
 
 gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) + 
   geom_bar(position = "identity", fill = "#ade8f4") + 
-  theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
+  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
 
 
 gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
   geom_bar(position = "identity", fill = "#ade8f4") + 
-  theme_minimal() + xlab("Second Order First Digit")
+  theme_minimal() + xlab("Second Order First Digit")+ geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
 
 
 
@@ -350,8 +366,11 @@ d <- list(
   y = 1,
   showarrow = FALSE
 )
-
-num = 1
+ay <- list(
+  overlaying = "y",
+  side = "right",
+  title = "Ideal Benfords Law"
+)
 
 subplot(ggplotly(gg1)%>%layout(annotations = a),
         ggplotly(gg2)%>%layout(annotations = b), 
@@ -380,9 +399,12 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
 
 # ggplotly(plot(trends))
 
-# euro2020 = eurohourwide %>% filter(year == 2020) %>% select(load)
-
-
+# trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# 
+# # euro2020 = eurohourwide %>% filter(year == 2020) %>% select(load)
+# gg1 + geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1.5, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))
 
 
 
