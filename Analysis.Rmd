@@ -378,12 +378,13 @@ ay <- list(
   title = "Ideal Benfords Law"
 )
 
+
 subplot(ggplotly(gg1)%>%layout(annotations = a),
         ggplotly(gg2)%>%layout(annotations = b), 
         ggplotly(gg3)%>%layout(annotations = c),
         ggplotly(gg4)%>%layout(annotations = d), 
-        nrows = 2)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'), 
-            yaxis2 = list(showticklabels = F), yaxis4 = list(showticklabels = F), 
+        nrows = 2,shareY = TRUE)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'), 
+            yaxis2 = list(showticklabels = T), yaxis4 = list(showticklabels = F), 
             xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
     add_annotations(
         text = "First Digit in Hourly Load",
