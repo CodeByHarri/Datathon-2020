@@ -14,16 +14,17 @@ editor_options:
   chunk_output_type: inline
 ---
 
+<center>
+*This report explores electricity consumption patterns within forecasting, demand and behaviours to tackle if data can show us actionable insights.*
+</center><br> <!-- New line --> 
 
-*I'll be exploring electricity consumption patterns within forecasting, demand and anomalous behaviours to tackle if the data can show us actionable insights. This will be split in three parts.*  
+1. **Forecasting**: *Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis*
 
-  * *Forecasting: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis*
-  
-  * *Demand & Economics: Duck curve & the economomy - An analysis into electricity consumption*
-  
-  * *Anomalous Behaviours: An experimental approach to detect change in production activity*  
+2. **Demand & Economics**: *Duck curve & the economy - An analysis into electricity consumption*
 
+3. **Anomalous Behaviours**: *An experimental approach to detect change in production activity*
 
+</center>
 
 
 things left to do: 
@@ -36,9 +37,9 @@ things left to do:
 
 
 
-<!-- <center> <h2>Forecasting: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis</h2> </center> -->
+<center> <h2>**Forecasting**: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis</h2> </center>
 
-
+work in progress
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 library(ggplot2)
@@ -211,7 +212,7 @@ library(itertools)
 
 
 
-<center> <h2>Demand & Economics: Duck curve & the economomy - an analysis into electricity consumptione</h2> </center>
+<center> <h2>**Demand & Economics**: Duck curve & the economy - an analysis into electricity consumptione</h2> </center>
 
 With this rise in solar energy production anticipation of electricity demand has been on the forefront of utility companies. The duck curve simply is the demand for electricity any given time during the day. The early mornings consist of low energy demands, but as people wake up and busineses begin production the demand rises. Then peaks around sunset before dropping. As you may have guessed the production of energy during the peak hours of the day helps reduce the demand needed. This is evident as the year go on, the dip during mid day drops lower and lower forming a duck like shape. This is more prominent in countries with renewable energy rebates such as Sewden's tax regulation mechanisms and a subsidy scheme. 
 
@@ -306,7 +307,9 @@ p
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 
-<center> <h2>Anomalous Behaviours: An experimental approach to detect change in production activity</h2> </center>
+<center> <h2>**Anomalous Behaviours**: An experimental approach to detect change in production activity</h2> </center>
+
+
 
 A quick look into anomalous number patterns in 2020 electricty load data in Western Europe.
 
