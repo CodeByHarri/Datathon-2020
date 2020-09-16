@@ -250,7 +250,13 @@ p
 
 # Benfords Law
 
-A quick look into anomalous number patterns in 2020 electricty load data in Western Europe  
+A quick look into anomalous number patterns in 2020 electricty load data in Western Europe.
+
+This takes a look at the first digit of the sum of electricity load of every hour in per country in western europe. In combination with *Law of large numbers*, Benfords Law should be able to tell us if there was a signficant change in 2020. 
+
+
+
+NOTE TO SELF: not enough data in hour to adhere to law of large numbers, need to trytransforming data into 15min periods to encapsulate this maybe? 
 
 
 ### Benfords law on Electricity Load 2020 VS 2019 In Western Europe
@@ -405,9 +411,6 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
 # # euro2020 = eurohourwide %>% filter(year == 2020) %>% select(load)
 # gg1 + geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1.5, color="black", alpha = 0.5, group = 1) + 
 #   scale_y_continuous(sec.axis = sec_axis(~. /3))
-
-
-
 
 ```
 
