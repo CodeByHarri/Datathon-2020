@@ -248,127 +248,210 @@ p
 <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 
 
+# Benfords Law
+
+A quick look into anomalous number patterns in 2020 electricty load data in Western Europe  
 
 
+### 2020
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
+library(benford.analysis)
+library(gridExtra)
+
+
+euro2020 = eurohourwide %>% filter(year == 2020) 
+euro2019 = eurohourwide %>% filter(year == 2019) 
+
+# eurodiff$load = euro2020$load - euro2019$load
+
+trends2020 = benford(euro2020$load, number.of.digits = 1, discrete = T, sign = "positive") 
+trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "positive") 
+# trendsdiff = benford(eurodiff$load, number.of.digits = 1, discrete = T, sign = "positive") 
+
+
+# 
+# ggdiff1 = ggplot(trendsdiff$data,aes(x = data.digits, fill = data.digits)) + 
+#   geom_bar(position = "identity", fill = "#63FF83") + 
+#   theme_minimal() + xlab("First Digit")
+# 
+# 
+# ggdiff2 = ggplot(trendsdiff$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
+#   geom_bar(position = "identity", fill = "#63FF83") + 
+#   theme_minimal() + xlab("Second Order First Digit")
+
+
+gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) + 
+  geom_bar(position = "identity", fill = "#63FF83") + 
+  theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
+
+
+gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
+  geom_bar(position = "identity", fill = "#63FF83") + 
+  theme_minimal() + xlab("Second Order First Digit") #+ labs(title="Second Order Benfords Law")
+
+
+
+gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) + 
+  geom_bar(position = "identity", fill = "#63FF83") + 
+  theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
+
+
+gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
+  geom_bar(position = "identity", fill = "#63FF83") + 
+  theme_minimal() + xlab("Second Order First Digit")
+
+
+
+a <- list(
+  text = "2020 First Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+b <- list(
+  text = "2020 Second Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+c <- list(
+  text = "2019 First Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+d <- list(
+  text = "2019 Second Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+num = 1
+
+subplot(ggplotly(gg1)%>%layout(annotations = a),
+        ggplotly(gg2)%>%layout(annotations = b), 
+        ggplotly(gg3)%>%layout(annotations = c),
+        ggplotly(gg4)%>%layout(annotations = d), 
+        nrows = 2)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'), 
+            yaxis2 = list(showticklabels = F), yaxis4 = list(showticklabels = F), 
+            xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
+    add_annotations(
+        text = "First Digit in Load",
+        x = 0.5,
+        y = 0,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        yshift = -35,
+        showarrow = FALSE,
+        font = list(size = 15)
+    )  %>%
+    add_annotations(
+        text = "Benfords law on Electricity Load 2020 VS 2019 In Western Europe",
+        x = 0.5,
+        y = 1,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        yshift = 15,
+        showarrow = FALSE,
+        font = list(size = 25)
+    ) 
+#%>% layout(title= "Benfords Law")
+
+# ggplotly(gg)
+
+
+
+# ggplotly(plot(trends))
+
+# euro2020 = eurohourwide %>% filter(year == 2020) %>% select(load)
+
+
+
+
+
+
+```
+
+
+<div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+
+
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
 ```
 
 
 
 
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 
-```{r, echo=FALSE,}
-# sample(2009:2011, 150, replace=TRUE)
-# set.seed(42)
-# iris$year <- sample(2009:2011, 150, replace=TRUE) #MAKING FAKE YEAR DATA
-# 
-# p <- iris %>%
-#   plot_ly(
-#     type = 'scatter', 
-#     x = ~Sepal.Length, 
-#     y = ~Petal.Length,
-#     color = ~as.factor(year), # GROUPING BY YEAR
-#     ####### SAMPLE SOLUTION ########
-#     # marker = list(color = ~as.factor(year), size = 8, opacity = 0.8),
-#     text = ~Species, # ADDED THIS TO ILLUSTRATE THAT THERE WRONG DATA IN THE TRANSFORMATION
-#     mode = 'markers', # IN MY EXAMPLE IM USING LINES, IT DOESNT MAKE SENSE TO USE IT HERE SO IM LEAVING IT AS MARKERS
-#     transforms = list(
-#       list(
-#         type = 'filter',
-#         target = ~Species,
-#         operation = '=',
-#         value = unique(iris$Species)[1]
-#       )
-#   )) %>% layout(
-#     updatemenus = list(
-#       list(
-#         type = 'dropdown',
-#         active = 0,
-#         buttons = list(
-#           list(method = "restyle",
-#                args = list("transforms[0].value", unique(iris$Species)[1]),
-#                label = unique(iris$Species)[1]),
-#           list(method = "restyle",
-#                args = list("transforms[0].value", unique(iris$Species)[2]),
-#                label = unique(iris$Species)[2]),
-#           list(method = "restyle",
-#                args = list("transforms[0].value", unique(iris$Species)[3]),
-#                label = unique(iris$Species)[3])
-#         )
-#       )
-#     )
-#   )
-# 
-# p
+
+```
+
+
+
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
+```
+
+
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
 ```
 
 
 
 
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 
 
-
-
-
-
-
-
-```{r shinyapp, echo=FALSE}
-# 
-# library(shiny)
-# # Rely on the 'WorldPhones' dataset in the datasets
-# # package (which generally comes preloaded).
-# library(datasets)
-# 
-# ui <- fluidPage(
-#   headerPanel("Intraday Energy Consumption"),
-#   sidebarPanel(
-#     selectInput('country','Country', c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')),
-#     selected = 'Sweden'),
-#   mainPanel(
-#     plotlyOutput('plot')
-#   )
-# )
-# 
-# server <- function(input, output) {
-#   
-#   
-#   d <- reactive({
-#     eurohourwide %>% filter(country == input$country)
-#     
-#     
-#   })
-#   
-#   
-#   output$plot <- renderPlotly(
-#     plot1 <-  plot_ly() %>% add_trace( data = d(), x = ~hour, y = ~load, type = 'scatter',
-#              mode = 'lines', color = ~as.factor(year), alpha = 0.7) %>% 
-#       layout(title = paste0('Intraday Energy Consumption in ',input$country),
-#          xaxis = list(title = 'Hour of Day'),
-#          yaxis = list(title = 'MW of Energy'))
-#     
-#   )
-# 
-# }
-# 
-# 
-# deps = lapply(extensions, extDependency) 
-#  if (filter != 'none') deps = c(deps, filterDependencies()) 
-#  htmlwidgets::createWidget( 
-#    'datatables', params, package = 'shiny', width = '100%', height = 'auto', 
-#    dependencies = deps 
-#  ) 
-# 
-# 
-# shinyApp(ui,server, options = list(height = 500))
 ```
 
 
 
 
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
+```
 
 
 
