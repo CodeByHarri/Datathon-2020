@@ -163,7 +163,7 @@ library(itertools)
 # Duck Curve
 
 
-```{r fig.cap="Figure 2: Descriptive Plots" , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
 fr = na.omit(fr)
@@ -282,23 +282,23 @@ trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "
 
 
 gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) + 
-  geom_bar(position = "identity", fill = "#63FF83") + 
+  geom_bar(position = "identity", fill = "#90e0ef") + 
   theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
 
 
 gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
-  geom_bar(position = "identity", fill = "#63FF83") + 
+  geom_bar(position = "identity", fill = "#90e0ef") + 
   theme_minimal() + xlab("Second Order First Digit") #+ labs(title="Second Order Benfords Law")
 
 
 
 gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) + 
-  geom_bar(position = "identity", fill = "#63FF83") + 
+  geom_bar(position = "identity", fill = "#ade8f4") + 
   theme_minimal() + xlab("First Digit")# + labs(title="Benfords Law")
 
 
 gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
-  geom_bar(position = "identity", fill = "#63FF83") + 
+  geom_bar(position = "identity", fill = "#ade8f4") + 
   theme_minimal() + xlab("Second Order First Digit")
 
 
