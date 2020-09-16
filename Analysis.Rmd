@@ -14,6 +14,31 @@ editor_options:
   chunk_output_type: inline
 ---
 
+
+*I'll be exploring electricity consumption patterns within forecasting, demand and anomalous behaviours to tackle if the data can show us actionable insights. This will be split in three parts.*  
+
+  * *Forecasting: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis*
+  
+  * *Demand & Economics: Duck curve & the economomy - An analysis into electricity consumption*
+  
+  * *Anomalous Behaviours: An experimental approach to detect change in production activity*  
+
+
+
+
+things left to do: 
+
+* data wrangle australian, and american data into the same format as euro data. 
+* remake the apps to acconomadate for extra data. 
+* pretrains and save models for all combinations of countrys and years of forecast
+* make an australia only data that by 5min to apply befords law
+
+
+
+
+<!-- <center> <h2>Forecasting: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis</h2> </center> -->
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 library(ggplot2)
@@ -186,7 +211,7 @@ library(itertools)
 
 
 
-# Duck Curve
+<center> <h2>Demand & Economics: Duck curve & the economomy - an analysis into electricity consumptione</h2> </center>
 
 With this rise in solar energy production anticipation of electricity demand has been on the forefront of utility companies. The duck curve simply is the demand for electricity any given time during the day. The early mornings consist of low energy demands, but as people wake up and busineses begin production the demand rises. Then peaks around sunset before dropping. As you may have guessed the production of energy during the peak hours of the day helps reduce the demand needed. This is evident as the year go on, the dip during mid day drops lower and lower forming a duck like shape. This is more prominent in countries with renewable energy rebates such as Sewden's tax regulation mechanisms and a subsidy scheme. 
 
@@ -281,7 +306,7 @@ p
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 
-# Benfords Law
+<center> <h2>Anomalous Behaviours: An experimental approach to detect change in production activity</h2> </center>
 
 A quick look into anomalous number patterns in 2020 electricty load data in Western Europe.
 
