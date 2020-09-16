@@ -39,3 +39,8 @@ Analyse electricity consumption data and determine if a change can be detected t
 ![](images/homelogo.png)
 </a>
 </div>
+
+
+
+
+

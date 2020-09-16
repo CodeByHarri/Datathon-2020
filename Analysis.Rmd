@@ -1,5 +1,5 @@
 ---
-title: "Can electricity consumption patterns tell us anything about the pandemic?"
+title: <center> <h1>Can electricity consumption patterns tell us anything about the pandemic?</h1> </center>
 author: 
 output:
   html_document: 
@@ -23,11 +23,6 @@ library(dplyr)
 library(plotly)
 library(itertools)
 ```
-
-
-
-
-
 
 
 ```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
@@ -59,6 +54,8 @@ library(itertools)
 # dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
 # dfwide = dfwide[-1]
 ```
+
+
 
 ```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
@@ -98,7 +95,7 @@ library(itertools)
 
 
 
-```{r fig.cap="Figure 2: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
+```{r fig.cap="Figure 2: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='show'}
 # fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
 # fr = na.omit(fr)
 # fr$end = fr$end %>% as.Date()
@@ -119,12 +116,40 @@ library(itertools)
 # fcBESTFIT2 = readRDS(file = "eurodata/bf2.rds")
 # p = readRDS(file = "eurodata/p.rds")
 # q = readRDS(file = "eurodata/q.rds")
-# 
+
 # lay <- rbind(c(1,1,1,1),
 #              c(2,2,3,3))
 # 
 # grid.arrange(x1, p, q, layout_matrix = lay)
-#  
+
+# a <- list(
+#   text = "TRAINING ON 2015 TO 2018 AND TESTING ON THE FIRST 209 DAYS OF 2019 - FRANCE ELECTRICITY CONSUMPTION",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# 
+# b <- list(
+#   text = "TRAINING ON 2016 TO 2019 AND TESTING ON THE FIRST 209 DAYS OF 2020 - FRANCE ELECTRICITY CONSUMPTION
+# ",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# 
+# 
+# subplot(ggplotly(p)%>%layout(annotations = a), 
+#         ggplotly(q)%>%layout(annotations = b), shareY = TRUE)
 
 ```
 
@@ -162,6 +187,13 @@ library(itertools)
 
 
 # Duck Curve
+
+With this rise in solar energy production anticipation of electricity demand has been on the forefront of utility companies. The duck curve simply is the demand for electricity any given time during the day. The early mornings consist of low energy demands, but as people wake up and busineses begin production the demand rises. Then peaks around sunset before dropping. As you may have guessed the production of energy during the peak hours of the day helps reduce the demand needed. This is evident as the year go on, the dip during mid day drops lower and lower forming a duck like shape. This is more prominent in countries with renewable energy rebates such as Sewden's tax regulation mechanisms and a subsidy scheme. 
+
+There's two critical issues that rise from this. One, as steeper drops in demand occur more rapid increases in the production are needed during peak hours with no sunlight - this poses a serious burden on power infratructure and diminish efficency. 
+The second issue is that during days of over production in solar energy, grid managers turn off solar panels to prevent overloading the power grid and throw away extra solar energy. 
+
+The solution is as battery technology evolves, we're able to store energy more efficiently and locally reducing waste while moving away from non-renewables. 
 
 
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
@@ -246,7 +278,7 @@ p
 
 
 
-<div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 
 # Benfords Law
@@ -260,7 +292,7 @@ This takes a look at the first digit of the sum of electricity load of every hou
 NOTE TO SELF: not enough data in hour to adhere to law of large numbers, need to trytransforming data into 15min periods to encapsulate this maybe? 
 
 
-### Benfords law on Electricity Load 2020 VS 2019 In Western Europe
+<center> <h3>Benfords law on Electricity Load 2020 VS 2019 In Western Europe</h3> </center>
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 library(benford.analysis)
