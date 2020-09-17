@@ -48,8 +48,505 @@ library(gridExtra)
 library(dplyr)
 library(plotly)
 library(itertools)
+library(scales)
+library(forecast)
 ```
 
+
+
+```{r 1, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+# # WESTERN EURO DATA DAY
+# 
+# fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+# fr$end = fr$end %>% as.Date()
+# fr = aggregate(fr["load"], by=fr["end"], sum)
+# fr = fr[1:(length(fr$load)-1),]
+# df = fr
+# setwd("eurodata/")
+# temp = list.files(pattern="*.csv")
+# for (i in 1:length(temp)){
+#   fr = read.csv(temp[i], header = TRUE, stringsAsFactors = FALSE)
+#   fr = na.omit(fr)
+#   fr$end = fr$end %>% as.Date()
+#   fr = aggregate(fr["load"], by=fr["end"], sum)
+#   fr = fr[1:(length(fr$load)-1),]
+#   fr[,paste0(temp[i])] = fr$load
+#   df = left_join(df, fr, by=c("end"))
+# }
+# df = df[, -grep("load", colnames(df))]
+# colnames(df) = c('end', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+# 
+# 
+# 
+# # AUSTRALIA DATA
+# 
+# aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201501_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/VIC/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   aus = rbind(aus, ausx)
+# }
+# 
+# VIC = aus[!duplicated(aus), ]
+# 
+# aus = read.csv("ausdata/NSW/PRICE_AND_DEMAND_201501_NSW1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/NSW/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/NSW/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   aus = rbind(aus, ausx)
+# }
+# NSW = aus[!duplicated(aus), ]
+# 
+# 
+# aus = read.csv("ausdata/QLD/PRICE_AND_DEMAND_201501_QLD1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/QLD/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/QLD/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   aus = rbind(aus, ausx)
+# }
+# QLD = aus[!duplicated(aus), ]
+# 
+# 
+# aus = read.csv("ausdata/SA/PRICE_AND_DEMAND_201501_SA1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/SA/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/SA/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   aus = rbind(aus, ausx)
+# }
+# SA = aus[!duplicated(aus), ]
+# 
+# 
+# aus = read.csv("ausdata/TAS/PRICE_AND_DEMAND_201501_TAS1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/TAS/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/TAS/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   aus = rbind(aus, ausx)
+# }
+# TAS = aus[!duplicated(aus), ]
+# 
+# remove(aus)
+# aus = VIC
+# aus$NSW = NSW$TOTALDEMAND
+# aus$VIC = VIC$TOTALDEMAND
+# aus$TAS = TAS$TOTALDEMAND
+# aus$QLD = QLD$TOTALDEMAND
+# aus$SA = SA$TOTALDEMAND
+# 
+# 
+# aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
+# auswide = gather(aus, state, load, NSW:SA, factor_key=TRUE)
+# auswide = auswide[order(auswide$SETTLEMENTDATE), ]
+# #saving a state dataframe
+# statewide = auswide
+# 
+# 
+# # US DATA
+# us = read.csv("usdata/EIA930_BALANCE_2015_Jul_Dec.csv", header =TRUE, stringsAsFactors = FALSE)
+# us$Data.Date = us$Data.Date %>% as.Date(format = "%m/%d/%Y")
+# us$Demand..MW.=  us$Demand..MW. %>% as.numeric()
+# us = aggregate(Demand..MW. ~ Data.Date, data = us, sum)
+# 
+# temp = list.files("usdata/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   usx = read.csv(paste0("usdata/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   usx$Data.Date = usx$Data.Date %>% as.Date(format = "%m/%d/%Y")
+#   usx$Demand..MW.=  usx$Demand..MW. %>% as.numeric()
+#   usx = aggregate(Demand..MW. ~ Data.Date, data = usx, sum)
+#   us = rbind(us, usx)
+# }
+# US = us[!duplicated(us), ]
+# US = US[order(US$Data.Date), ]
+# colnames(US) = c("end","US")
+# 
+# # MASTER DATA FRAME
+# worlddata = df[-17]
+# auswide = aggregate(load ~ SETTLEMENTDATE, data = auswide, sum)
+# auswide = auswide[(auswide$SETTLEMENTDATE> "2014-12-31" & auswide$SETTLEMENTDATE< "2020-08-01"),]
+# worlddata = add_column(worlddata, Australia = auswide$load, .after = 1) #adds australia
+# worlddata = left_join(worlddata, US, by=c("end")) # adds the US 
+# 
+# 
+# write.csv(worlddata, 'worlddata.csv')
+# worlddata = read.csv("worlddata.csv", header =TRUE, stringsAsFactors = FALSE)
+# 
+# worlddata = worlddata[-1]
+# 
+# worlddata = gather(worlddata, country, load, Australia:US, factor_key=TRUE)
+# worlddata = worlddata[order(worlddata$end), ]
+# 
+# worlddata
+
+```
+
+
+
+
+
+```{r 2, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+# data = worlddata
+
+# country = c('Australia', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden','US')
+
+# MAKE SARIMA DATA 
+
+# for (country_string in country){print(country_string)
+#   # country_string = "US"
+# data = worlddata
+# data = data %>% filter(country == country_string) 
+# data[c("end","load")]
+# data
+# t20152018 = data[(data$end >= "2015-01-01" & data$end <= "2018-12-31"),]
+# t20162019 = data[(data$end >= "2016-01-01" & data$end <= "2019-12-31"),]
+# # t20152020 = data
+# 
+# 
+# # Create a daily Date object - helps my work on dates
+# inds <- seq(as.Date("2015-01-01"), as.Date("2018-12-31"), by = "day")
+# 
+# ## Create a time series object
+# set.seed(25)
+# myts = ts(t20152018$load,
+#            start = c(2015, as.numeric(format(inds[1], "%j"))),
+#            frequency = 7)
+# 
+# bestfit <- list(aicc=Inf)
+# # Choose the best model by AICc
+# for(i in 1:3) {
+#   for (j in 1:3){
+#     for (k in 1:3){
+#     z1 <- fourier(ts(myts, frequency=7), K=i)
+#     z2 <- fourier(ts(myts, frequency=365), K=j)
+#     z3 <- fourier(ts(myts, frequency=30), K=k)
+#     fit <- auto.arima(myts, xreg=cbind(z1, z2, z3), seasonal=F)
+#     if(fit$aicc < bestfit$aicc) {
+#       bestfit <- list(aicc=fit$aicc, i=i, j=j, k=k, fit=fit)
+#     }
+#     }
+#   }
+# }
+# 
+# # summary(bestfit$fit)
+# fcBESTFIT2019 = forecast(bestfit$fit, xreg=cbind(
+#                  fourier(ts(myts, frequency=7), K=bestfit$i, h=200),
+#                  fourier(ts(myts, frequency=365), K=bestfit$j, h=200),
+#                  fourier(ts(myts, frequency=30), K=bestfit$k, h=200)))
+# 
+# saveRDS(fcBESTFIT2019, file = paste0(country_string,"2019",".rds"))
+# fcBESTFIT3 = readRDS(file = "ausdata/bf3.rds")
+# Create a daily Date object - helps my work on dates
+# inds <- seq(as.Date("2016-01-01"), as.Date("2019-12-31"), by = "day")
+# 
+# ## Create a time series object
+# set.seed(25)
+# myts = ts(t20162019$load,
+#            start = c(2019, as.numeric(format(inds[1], "%j"))),
+#            frequency = 7)
+# 
+# bestfit <- list(aicc=Inf)
+# # Choose the best model by AICc
+# for(i in 1:3) {
+#   for (j in 1:3){
+#     for (k in 1:3){
+#     z1 <- fourier(ts(myts, frequency=7), K=i)
+#     z2 <- fourier(ts(myts, frequency=365), K=j)
+#     z3 <- fourier(ts(myts, frequency=30), K=k)
+#     fit <- auto.arima(myts, xreg=cbind(z1, z2, z3), seasonal=F)
+#     if(fit$aicc < bestfit$aicc) {
+#       bestfit <- list(aicc=fit$aicc, i=i, j=j, k=k, fit=fit)
+#     }
+#     }
+#   }
+# }
+# 
+# # summary(bestfit$fit)
+# fcBESTFIT2020 = forecast(bestfit$fit, xreg=cbind(
+#                  fourier(ts(myts, frequency=7), K=bestfit$i, h=200),
+#                  fourier(ts(myts, frequency=365), K=bestfit$j, h=200),
+#                  fourier(ts(myts, frequency=30), K=bestfit$k, h=200)))
+# 
+# saveRDS(fcBESTFIT2020, file = paste0(country_string,"2020",".rds"))
+# }
+
+
+
+```
+
+
+
+
+```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# worlddata = gather(worlddata, country, load, Australia:US, factor_key=TRUE)
+# worlddata = worlddata[order(worlddata$end), ]
+
+country = c('Australia', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden','US')
+
+
+worlddata = read.csv("worlddata.csv", header =TRUE, stringsAsFactors = FALSE)
+
+worlddata = worlddata[-1]
+
+worlddata = gather(worlddata, country, load, Australia:US, factor_key=TRUE)
+worlddata = worlddata[order(worlddata$end), ]
+
+
+worlddata$end = worlddata$end %>% as.Date()
+
+addsarima = function(model,name){
+x = seq(as.Date("2019-01-01"), as.Date("2019-07-19"), by = "day")
+coun = rep(name,length(x))
+model = data.frame(end = x, SARIMAX2019 = model$mean, country = coun)
+model$country = model$country %>% as.factor()
+worlddata = left_join(worlddata, model, by=c("end","country"))
+return(worlddata)
+}
+
+Australia19 = readRDS(file = "SARIMAXdata/Australia2019.rds")
+Austria19 = readRDS(file = "SARIMAXdata/Austria2019.rds")
+Belgium19 = readRDS(file = "SARIMAXdata/Belgium2019.rds")
+Switzerland19 = readRDS(file = "SARIMAXdata/Switzerland2019.rds")
+Germany19 = readRDS(file = "SARIMAXdata/Germany2019.rds")
+Denmark19 = readRDS(file = "SARIMAXdata/Denmark2019.rds")
+Spain19 = readRDS(file = "SARIMAXdata/Spain2019.rds")
+France19 = readRDS(file = "SARIMAXdata/France2019.rds")
+UK19 = readRDS(file = "SARIMAXdata/UK2019.rds")
+Ireland19 = readRDS(file = "SARIMAXdata/Ireland2019.rds")
+Italy19 = readRDS(file = "SARIMAXdata/Italy2019.rds")
+Luxembourg19 = readRDS(file = "SARIMAXdata/Luxembourg2019.rds")
+Netherlands19 = readRDS(file = "SARIMAXdata/Netherlands2019.rds")
+Norway19 = readRDS(file = "SARIMAXdata/Norway2019.rds")
+Portugal19 = readRDS(file = "SARIMAXdata/Portugal2019.rds")
+Sweden19 = readRDS(file = "SARIMAXdata/Sweden2019.rds")
+worlddata$SARIMAX2019 = addsarima(Australia19,"Australia")$SARIMAX2019
+worlddata = left_join(worlddata, addsarima(Austria19,"Austria"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Belgium19,"Belgium"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Switzerland19,"Switzerland"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Germany19,"Germany"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Denmark19,"Denmark"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Spain19,"Spain"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(France19,"France"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(UK19,"UK"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Ireland19,"Ireland"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Italy19,"Italy"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Luxembourg19,"Luxembourg"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Netherlands19,"Netherlands"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Norway19,"Norway"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Portugal19,"Portugal"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+worlddata = left_join(worlddata, addsarima(Sweden19,"Sweden"), by=c("end","country","load"))
+worlddata$SARIMAX2019 = rowSums(worlddata[,c("SARIMAX2019.x", "SARIMAX2019.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:4)]
+
+worlddata[(worlddata$SARIMAX2019 == 0),]$SARIMAX2019 <- NA
+
+
+addsarima = function(model,name){
+x = seq(as.Date("2020-01-01"), as.Date("2020-07-18"), by = "day")
+coun = rep(name,length(x))
+model = data.frame(end = x, SARIMAX2020 = model$mean, country = coun)
+model$country = model$country %>% as.factor()
+worlddata = left_join(worlddata, model, by=c("end","country"))
+return(worlddata)
+}
+
+Australia20 = readRDS(file = "SARIMAXdata/Australia2020.rds")
+Austria20 = readRDS(file = "SARIMAXdata/Austria2020.rds")
+Belgium20 = readRDS(file = "SARIMAXdata/Belgium2020.rds")
+Switzerland20 = readRDS(file = "SARIMAXdata/Switzerland2020.rds")
+Germany20 = readRDS(file = "SARIMAXdata/Germany2020.rds")
+Denmark20 = readRDS(file = "SARIMAXdata/Denmark2020.rds")
+Spain20 = readRDS(file = "SARIMAXdata/Spain2020.rds")
+France20 = readRDS(file = "SARIMAXdata/France2020.rds")
+UK20 = readRDS(file = "SARIMAXdata/UK2020.rds")
+Ireland20 = readRDS(file = "SARIMAXdata/Ireland2020.rds")
+Italy20 = readRDS(file = "SARIMAXdata/Italy2020.rds")
+Luxembourg20 = readRDS(file = "SARIMAXdata/Luxembourg2020.rds")
+Netherlands20 = readRDS(file = "SARIMAXdata/Netherlands2020.rds")
+Norway20 = readRDS(file = "SARIMAXdata/Norway2020.rds")
+Portugal20 = readRDS(file = "SARIMAXdata/Portugal2020.rds")
+Sweden20 = readRDS(file = "SARIMAXdata/Sweden2020.rds")
+worlddata$SARIMAX2020 = addsarima(Australia20,"Australia")$SARIMAX2020
+worlddata = left_join(worlddata, addsarima(Austria20,"Austria"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Belgium20,"Belgium"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Switzerland20,"Switzerland"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Germany20,"Germany"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Denmark20,"Denmark"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Spain20,"Spain"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(France20,"France"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(UK20,"UK"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Ireland20,"Ireland"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Italy20,"Italy"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Luxembourg20,"Luxembourg"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Netherlands20,"Netherlands"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Norway20,"Norway"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Portugal20,"Portugal"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+worlddata = left_join(worlddata, addsarima(Sweden20,"Sweden"), by=c("end","country","load","SARIMAX2019"))
+worlddata$SARIMAX2020 = rowSums(worlddata[,c("SARIMAX2020.x", "SARIMAX2020.y")], na.rm=TRUE)
+worlddata = worlddata[,c(1:5)]
+
+worlddata[(worlddata$SARIMAX2020 == 0),]$SARIMAX2020 <- NA
+
+# worlddata[(worlddata$end >= "2020-01-01"),]
+
+```
+
+
+
+```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+country = c('Australia', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden','US')
+
+
+button_list <- lapply(1:length(country), function(x){
+  list(method = "restyle",
+       args = list("transforms[0].value", country[x]),
+       label = country[x])
+})
+
+
+
+p <- plot_ly(data = worlddata, x = ~end, y = ~load, type = 'scatter', text = ~end, hoverinfo =~as.factor(end),
+             mode = 'lines', alpha = 1, line = list(color = '#06d6a0', width = 2), name = paste0(unique(worlddata$country)[1]),
+             transforms = list( list(
+                            type = 'filter',
+                            target = ~country,
+                            operation = '=',
+                            value = unique(worlddata$country)[1]
+      ))) %>% layout(
+        title = paste0('SARIMAX on Energy Consumption'),
+         xaxis = list(title = 'Date'),
+         yaxis = list(title = 'MW of Energy'),
+    updatemenus = list(
+      list(
+  xanchor = 'left',
+  yanchor = "top",
+  pad = list('r'= 0, 't'= 10, 'b' = 10),
+  x = 0,
+  y = 1.27,
+        type = 'dropdown',
+        active = 0,
+        buttons = button_list
+        )
+      )
+    )
+  
+# p <- plotly_build(p)
+
+
+p = p %>% layout(xaxis = list(
+        range =
+            c(as.numeric(as.POSIXct("2018-11-01", format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct("2020-06-30", format="%Y-%m-%d"))*1000),
+        type = "date")) 
+
+p = p  %>% layout(xaxis = list(rangeslider = list(type = "date")))
+
+p = p  %>% add_trace(data = worlddata, x = ~end, y = ~SARIMAX2019, type = 'scatter',line=list(color='#e63946',dash='dashed'),
+             mode = 'lines', name = 'SARIMAX 2019', alpha = 1)
+p = p  %>% add_trace(data = worlddata, x = ~end, y = ~SARIMAX2020, type = 'scatter',line=list(color='#457b9d',dash='dashed'),
+             mode = 'lines', name = 'SARIMAX 2020', alpha = 1)
+p
+
+# saveRDS(p, file = "worldtime.rds")
+# worldtime = readRDS(file = "worldtime.rds")
+
+```
+
+The figure above is a time-series of electricity consumption in each country. with an overlay of a SARIMAX model predicting energy consumption in 2019 vs 2020, having been trained on the previous 4 years worth of data. The appendix outlines the accuracy of these models.The objective of this plot and table is to illustrate the predictability of electricity consumption data during a normal year vs a pandemic enduced year. The change is clearly picked up in the drastic changes in accuracy.
+
+Electricity consumption can be attributed to weather, seasonality, business cycles & base load. Weather and seasonality are in present moment indicators. The temperature causes one to use heating and cooling measures. Seasonality will effect the duration of lighting usage. Business cycles and base load (level of business activity) can be presumptiously reactive to conditions unlike weather and seasonality which are reactive in the moment. Hence, electricity consumption attributed to business cycles and base load can be a forward looking indicator into economic activity. When diving into the plots individually of each country, it is clear that electricity consumption is reactive to policy changes. Using France as an example, their full lockdown began 12 weeks into 2020 and ended in week 20. The 2020 forecast is almost perfectly out of place between week 12 and 20, before lining up again with the actual consumption.
 
 ```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
 
@@ -212,7 +709,7 @@ library(itertools)
 
 
 
-<center> <h2>**Demand & Economics**: Duck curve & the economy - an analysis into electricity consumptione</h2> </center>
+<center> <h2>**Demand & Economics**: Duck curve & the economy - an analysis into electricity consumption</h2> </center>
 
 With this rise in solar energy production anticipation of electricity demand has been on the forefront of utility companies. The duck curve simply is the demand for electricity any given time during the day. The early mornings consist of low energy demands, but as people wake up and busineses begin production the demand rises. Then peaks around sunset before dropping. As you may have guessed the production of energy during the peak hours of the day helps reduce the demand needed. This is evident as the year go on, the dip during mid day drops lower and lower forming a duck like shape. This is more prominent in countries with renewable energy rebates such as Sewden's tax regulation mechanisms and a subsidy scheme. 
 
@@ -222,7 +719,21 @@ The second issue is that during days of over production in solar energy, grid ma
 The solution is as battery technology evolves, we're able to store energy more efficiently and locally reducing waste while moving away from non-renewables. 
 
 
+
+
+
+
+
+
+
+
+
+
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
+# WESTERN EURO DATA HOUR
 
 fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
 fr = na.omit(fr)
@@ -245,11 +756,13 @@ df = df[, -grep("load", colnames(df))]
 colnames(df) = c('hour','year', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
 
 eurohourwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
-eurohourwide = eurohourwide[-3] 
+eurohourwide = eurohourwide[-3]
 
 country = c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
 
 eurohourwide <- eurohourwide[order(eurohourwide$year), ]
+
+
 
 # build up interactive element, the filter to the two groups
 button_list <- lapply(1:length(country), function(x){
@@ -262,8 +775,7 @@ button_list <- lapply(1:length(country), function(x){
 # fr = na.omit(fr)
 # fr$hour = substr(fr$end,11,nchar(fr$end)-12)
 # fr$year = substr(fr$end,1,nchar(fr$end)-21)
-# fr  = aggregate(load ~ hour + year, data = fr, mean)
-
+# fr  = aggregate(load ~ hour + year, data = fr, mean
 
 p <- plot_ly(data = eurohourwide, x = ~hour, y = ~load, type = 'scatter', text = ~year, hoverinfo =~as.factor(year),
              mode = 'lines', 
