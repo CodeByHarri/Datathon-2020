@@ -29,17 +29,19 @@ editor_options:
 
 things left to do: 
 
-* data wrangle australian, and american data into the same format as euro data. 
+* data wrangle australian, and american data into the same format as euro data for hourly data 
 * remake the apps to acconomadate for extra data. 
-* pretrains and save models for all combinations of countrys and years of forecast
+
 * make an australia only data that by 5min to apply befords law
+* look into a victoria only model with weather forecasts for insights app with a business application. 
 
 
 
 
 <center> <h2>**Forecasting**: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis</h2> </center>
 
-work in progress
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
 library(ggplot2)
@@ -53,6 +55,53 @@ library(forecast)
 ```
 
 
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+worlddata = read.csv("worlddata.csv", header =TRUE, stringsAsFactors = FALSE)
+worlddata = worlddata[-1]
+worlddata = gather(worlddata, country, load, Australia:US, factor_key=TRUE)
+# worlddata = worlddata[order(worlddata$end), ]
+
+worlddata2019 = worlddata[(worlddata$end >= "2019-01-01	" & worlddata$end <= "2019-08-31"),]
+worlddata2020 = worlddata[(worlddata$end >= "2020-01-01	" & worlddata$end <= "2020-08-31"),]
+
+worlddata2019$week  = strftime(worlddata2019$end ,"%V")
+worlddata2019$day  = strftime(worlddata2019$end, "%u")
+worlddata2020$week  = strftime(worlddata2020$end ,"%V")
+worlddata2020$day  = strftime(worlddata2020$end, "%u")
+
+worlddatadiff = merge(worlddata2019, worlddata2020, by=c("week","day","country"))
+worlddatadiff$diff = (worlddatadiff$load.y / worlddatadiff$load.x)*100 -100
+worlddatadiff[worlddatadiff == Inf] <- NA
+
+p <- plot_ly() %>%
+  add_trace( data = worlddatadiff, x = ~end.y, y = ~diff, type = 'scatter',
+             mode = 'lines', color = ~as.factor(country), alpha = 0.7)
+p <- plotly_build(p)
+
+legendItems <- list(Australia = 'legendonly', Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= T, France= 'legendonly', UK= 'legendonly', Ireland= T, Italy= 'legendonly', Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly', US = 'legendonly')
+
+for(i in seq_along(p$x$data)){
+  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+}
+
+p = p %>% layout(title = 'Energy Consumption Change (%) 2020-2019 Adjusted for Seasonality',
+         xaxis = list(title = 'Date'),
+         yaxis = list(title = 'Change (%)'))
+
+p = p %>%
+    layout(xaxis = list(
+        range =
+            c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+        type = "date"))
+
+p
+
+```
+
+Maecenas et nisi justo. Maecenas tincidunt facilisis malesuada. Sed libero lorem, bibendum eu aliquet vel, eleifend in mi. Maecenas ut convallis lectus, a bibendum eros. Donec suscipit pharetra justo at rhoncus. Aliquam erat volutpat. Morbi gravida purus eu efficitur rhoncus. Maecenas venenatis suscipit magna, at iaculis augue.
+
+Duis congue elit in odio dapibus finibus. Aliquam id dignissim odio. Phasellus at interdum ipsum. Nunc congue hendrerit nunc, in pharetra velit pellentesque ac. Praesent enim purus, suscipit nec enim nec, sollicitudin rutrum lectus. Donec convallis, odio quis posuere porttitor, arcu purus ullamcorper eros, sit amet luctus sapien lorem ac erat. Integer erat dui, suscipit et lacus id, maximus elementum elit. Curabitur quis mollis ipsum. Quisque volutpat vulputate sapien. Donec at mi id lectus accumsan efficitur in in eros. Nam vitae sem accumsan elit varius egestas. Cras facilisis id risus at congue. Integer ex eros, laoreet at dolor id, pellentesque viverra nulla.
 
 ```{r 1, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
@@ -498,7 +547,7 @@ button_list <- lapply(1:length(country), function(x){
 
 
 p <- plot_ly(data = worlddata, x = ~end, y = ~load, type = 'scatter', text = ~end, hoverinfo =~as.factor(end),
-             mode = 'lines', alpha = 1, line = list(color = '#06d6a0', width = 2), name = paste0(unique(worlddata$country)[1]),
+             mode = 'lines', alpha = 1, line = list(color = '#06d6a0', width = 2), name = paste0("Selected Country"),
              transforms = list( list(
                             type = 'filter',
                             target = ~country,

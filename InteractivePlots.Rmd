@@ -22,51 +22,53 @@ library(forecast)
 
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
-dfwide = dfwide[-1]
-
-euro2019 = dfwide[(dfwide$end >= "2019-01-01	" & dfwide$end <= "2019-08-31"),]
-euro2020 = dfwide[(dfwide$end >= "2020-01-01	" & dfwide$end <= "2020-08-31"),]
-
-euro2019$week  = strftime(euro2019$end ,"%V")
-euro2019$day  = strftime(euro2019$end, "%u")
-euro2020$week  = strftime(euro2020$end ,"%V")
-euro2020$day  = strftime(euro2020$end, "%u")
-
-euro = merge(euro2019, euro2020, by=c("week","day","country"))
-euro$diff = (euro$load.y / euro$load.x)*100 -100
-euro[euro == Inf] <- NA
-
-p <- plot_ly() %>%
-  add_trace( data = euro, x = ~end.y, y = ~diff, type = 'scatter',
-             mode = 'lines', color = ~as.factor(country), alpha = 0.7)
-p <- plotly_build(p)
-
-legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
-
-for(i in seq_along(p$x$data)){
-  p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
-}
-
-#### LONG FORMAT DATA
-# fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
-# xy.list <- as.list(as.data.frame((df)))
-# for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
-#                                               name = paste0(i),  type = 'scatter',
-#                                               mode = 'lines',evaluate = TRUE) }
-
-p = p %>% layout(title = 'Energy Consumption Change (%) in Western Europe 2020-2019 Adjusted for Seasonality',
-         xaxis = list(title = 'Time'),
-         yaxis = list(title = 'Change (%)'))
-
-p = p %>%
-    layout(xaxis = list(
-        range =
-            c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
-              as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
-        type = "date"))
-
-p
+# dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
+# dfwide = dfwide[-1]
+# 
+# 
+# 
+# euro2019 = dfwide[(dfwide$end >= "2019-01-01	" & dfwide$end <= "2019-08-31"),]
+# euro2020 = dfwide[(dfwide$end >= "2020-01-01	" & dfwide$end <= "2020-08-31"),]
+# 
+# euro2019$week  = strftime(euro2019$end ,"%V")
+# euro2019$day  = strftime(euro2019$end, "%u")
+# euro2020$week  = strftime(euro2020$end ,"%V")
+# euro2020$day  = strftime(euro2020$end, "%u")
+# 
+# euro = merge(euro2019, euro2020, by=c("week","day","country"))
+# euro$diff = (euro$load.y / euro$load.x)*100 -100
+# euro[euro == Inf] <- NA
+# 
+# p <- plot_ly() %>%
+#   add_trace( data = euro, x = ~end.y, y = ~diff, type = 'scatter',
+#              mode = 'lines', color = ~as.factor(country), alpha = 0.7)
+# p <- plotly_build(p)
+# 
+# legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
+# 
+# for(i in seq_along(p$x$data)){
+#   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+# }
+# 
+# #### LONG FORMAT DATA
+# # fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
+# # xy.list <- as.list(as.data.frame((df)))
+# # for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
+# #                                               name = paste0(i),  type = 'scatter',
+# #                                               mode = 'lines',evaluate = TRUE) }
+# 
+# p = p %>% layout(title = 'Energy Consumption Change (%) in Western Europe 2020-2019 Adjusted for Seasonality',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'Change (%)'))
+# 
+# p = p %>%
+#     layout(xaxis = list(
+#         range =
+#             c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
+#               as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+#         type = "date"))
+# 
+# p
 ```
 
 Above we can the % change in consumption between 2020 and 2019 in selected Western European countries adjusted for seasonality. There are some noticeable outliers such as Luxembourg which has had an astronomical large change in certain consumption. We can see a large drop in consumption starting in the second week of March in countries which began lockdown. 
