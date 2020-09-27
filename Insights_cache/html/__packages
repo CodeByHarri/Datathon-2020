@@ -1,0 +1,16 @@
+base
+ggplot2
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+gridExtra
+plotly
+iterators
+itertools
+scales
+forecast

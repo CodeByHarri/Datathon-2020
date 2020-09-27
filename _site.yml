@@ -5,7 +5,7 @@ navbar:
     - text: "Home"
       href: index.html
     - text: "Insights"
-      href: Analysis.html
+      href: Insights.html
     - text: "Interactive Plots"
       href: InteractivePlots.html
     - text: "References"

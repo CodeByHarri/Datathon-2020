@@ -18,7 +18,7 @@ editor_options:
 *This report explores electricity consumption patterns within forecasting, demand and behaviours to tackle if data can show us actionable insights.*
 </center><br> <!-- New line --> 
 
-1. **Patterns**: *2019 vs 2020 Intervential anlaysis & SARIMAX*
+1. **Policy Impact**: *2020 vs 2019 Intervential anlaysis & SARIMAX*
 
 2. **Demand & Economics**: *Duck curve & the economy - An analysis into electricity consumption*
 
@@ -38,9 +38,9 @@ things left to do:
 
 
 
-<center> <h2>**Patterns**: 2019 vs 2020 Intervential anlaysis & SARIMAX</h2> </center>
+<center> <h2>**Policy Impact**: 2020 vs 2019 Intervential anlaysis & SARIMAX</h2> </center>
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Let's begin with a look at the day to day difference between 2020 and 2019 across the world adjusted for seasonality. Exploring the COVID-19 responses across the world, it is evident that the difference in electricity consumption drastically drops based on the economic policies placed in each country. For example, Italy who began nation wide lockdowns on March 9, saw the immediate impact in electricity consumption over the next couple days. On March 22nd all factories are closed and all nonessential production is halted in Italy causing a further dip consumption difference. This same story can be told with several other countries. Interestingly, Sweden who chose a mitigation strategy still showed very little difference compared to it's Scandinavian neighbours Norway and Denmark who too much more preventitive measures. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
@@ -78,7 +78,7 @@ p <- plot_ly() %>%
              mode = 'lines', color = ~as.factor(country), alpha = 0.7)
 p <- plotly_build(p)
 
-legendItems <- list(Australia = 'legendonly', Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= T, France= 'legendonly', UK= 'legendonly', Ireland= T, Italy= 'legendonly', Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly', US = 'legendonly')
+legendItems <- list(Australia = 'legendonly', Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= 'legendonly', UK= 'legendonly', Ireland= 'legendonly', Italy= T, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= T, US = 'legendonly')
 
 for(i in seq_along(p$x$data)){
   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
@@ -99,9 +99,7 @@ p
 
 ```
 
-Maecenas et nisi justo. Maecenas tincidunt facilisis malesuada. Sed libero lorem, bibendum eu aliquet vel, eleifend in mi. Maecenas ut convallis lectus, a bibendum eros. Donec suscipit pharetra justo at rhoncus. Aliquam erat volutpat. Morbi gravida purus eu efficitur rhoncus. Maecenas venenatis suscipit magna, at iaculis augue.
-
-Duis congue elit in odio dapibus finibus. Aliquam id dignissim odio. Phasellus at interdum ipsum. Nunc congue hendrerit nunc, in pharetra velit pellentesque ac. Praesent enim purus, suscipit nec enim nec, sollicitudin rutrum lectus. Donec convallis, odio quis posuere porttitor, arcu purus ullamcorper eros, sit amet luctus sapien lorem ac erat. Integer erat dui, suscipit et lacus id, maximus elementum elit. Curabitur quis mollis ipsum. Quisque volutpat vulputate sapien. Donec at mi id lectus accumsan efficitur in in eros. Nam vitae sem accumsan elit varius egestas. Cras facilisis id risus at congue. Integer ex eros, laoreet at dolor id, pellentesque viverra nulla.
+Intervention analysis aims to accommodate for exigenous forces such as a pandemic with-in it's modelling in time-series analysis with several methods avaliable for trial, such as R packages 'changepoint' and 'mcp'. However, A forecast will a more useful tool in a practical application of electricity consumption. Hence, I've chosen to forecast 2020 and 2019 to compare how predictable electricity consumption is as a micro-study. 
 
 ```{r 1, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
@@ -595,7 +593,9 @@ p
 
 The figure above is a time-series of electricity consumption in each country. with an overlay of a SARIMAX model predicting energy consumption in 2019 vs 2020, having been trained on the previous 4 years worth of data. The appendix outlines the accuracy of these models.The objective of this plot and table is to illustrate the predictability of electricity consumption data during a normal year vs a pandemic enduced year. The change is clearly picked up in the drastic changes in accuracy.
 
-Electricity consumption can be attributed to weather, seasonality, business cycles & base load. Weather and seasonality are in present moment indicators. The temperature causes one to use heating and cooling measures. Seasonality will effect the duration of lighting usage. Business cycles and base load (level of business activity) can be presumptiously reactive to conditions unlike weather and seasonality which are reactive in the moment. Hence, electricity consumption attributed to business cycles and base load can be a forward looking indicator into economic activity. When diving into the plots individually of each country, it is clear that electricity consumption is reactive to policy changes. Using France as an example, their full lockdown began 12 weeks into 2020 and ended in week 20. The 2020 forecast is almost perfectly out of place between week 12 and 20, before lining up again with the actual consumption.
+Electricity consumption can be attributed to weather, seasonality, business cycles & base load. Weather and seasonality are present moment indicators unless a weather forecast can be added to the model. The temperature causes one to use heating and cooling measures. Business cycles and base load (level of business activity) can be presumptiously reactive to conditions unlike weather and seasonality which are reactive in the moment. Hence, electricity consumption attributed to business cycles and base load can be a forward looking indicator into economic activity. 
+
+
 
 ```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
 
