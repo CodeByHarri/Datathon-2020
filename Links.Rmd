@@ -26,7 +26,7 @@ output:
 
 
 # used for now. 
-4. IEA (2020), Monthly electricity statistics, IEA, Paris [IEA](https://www.iea.org/reports/monthly-electricity-statistics)
+4. IEA (2020), Monthly electricity statistics, IEA,  [IEA](https://www.iea.org/reports/monthly-electricity-statistics)
 
-5. Bureau of Meteorology (2020), Australian climate variability & change - Time series graphs
+5. Bureau of Meteorology (2020), Australian climate variability & change - Time series data
 [BoM](http://www.bom.gov.au/climate/change/index.shtml#tabs=Tracker&tracker=timeseries&tQ=graph%3Drain%26area%3Daus%26season%3Dallmonths%26ave_yr%3DT)

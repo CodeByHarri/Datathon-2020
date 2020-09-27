@@ -336,6 +336,44 @@ subplot(vicplot1, vicplot2, nrows=2,  shareX = TRUE) %>% layout(xaxis = list(ran
 
 
 
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# library(fpp2)
+# summary(elecdemand)
+# summary(elecdaily)
+# 
+# class(elecdemand)
+# 
+# 
+# x1 = autoplot(elecdemand[,c("Demand","Temperature")], facets=TRUE) +
+# xlab("Year: 2014") + ylab("") +
+# ggtitle("Half-hourly electricity demand: Victoria, Australia")
+# 
+# 
+# x2 = qplot(Temperature, Demand, data=as.data.frame(elecdemand)) +
+# ylab("Demand (GW)") + xlab("Temperature (Celsius)")
+# 
+# 
+# x3 = subplot(ggplotly(x1), ggplotly(x2))
+# 
+# cooling <- pmax(elecdemand[,"Temperature"], 18)
+# fit <- auto.arima(elecdemand[,"Demand"],
+# xreg = cbind(fourier(elecdemand, c(10,10,0)),
+# heating=elecdemand[,"Temperature"],
+# cooling=cooling))
+# 
+# temps <- subset(elecdemand[,"Temperature"],
+# start=NROW(elecdemand)-2*48+1)
+# fc <- forecast(fit,
+# xreg=cbind(fourier(temps, c(10,10,0)),
+# heating=temps, cooling=pmax(temps,18)))
+# x4 = autoplot(fc, include=14*48)
+# 
+# subplot(x4, x3)
+
+```
+
+
+
 # Things to do tomorrow night: 
 
 - make the SARIMAX for Australian data. 

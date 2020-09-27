@@ -1,5 +1,5 @@
 ---
-title: <center> <h1>Can electricity consumption patterns tell us anything about the pandemic?</h1> </center>
+title: <center><h1>Can electricity consumption patterns tell us anything about the pandemic?</h1></center>
 author: 
 output:
   html_document: 
@@ -18,13 +18,13 @@ editor_options:
 *This report explores electricity consumption patterns within forecasting, demand and behaviours to tackle if data can show us actionable insights.*
 </center><br> <!-- New line --> 
 
-1. **Forecasting**: *Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis*
+1. **Patterns**: *2019 vs 2020 Intervential anlaysis & SARIMAX*
 
 2. **Demand & Economics**: *Duck curve & the economy - An analysis into electricity consumption*
 
 3. **Anomalous Behaviours**: *An experimental approach to detect change in production activity*
 
-</center>
+
 
 
 things left to do: 
@@ -38,7 +38,7 @@ things left to do:
 
 
 
-<center> <h2>**Forecasting**: Forecasting 2019 vs 2020 using SARIMAX & intervential anlaysis</h2> </center>
+<center> <h2>**Patterns**: 2019 vs 2020 Intervential anlaysis & SARIMAX</h2> </center>
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
@@ -547,7 +547,7 @@ button_list <- lapply(1:length(country), function(x){
 
 
 p <- plot_ly(data = worlddata, x = ~end, y = ~load, type = 'scatter', text = ~end, hoverinfo =~as.factor(end),
-             mode = 'lines', alpha = 1, line = list(color = '#06d6a0', width = 2), name = paste0("Selected Country"),
+             mode = 'lines', alpha = 1, line = list(color = '#06d6a0'), name = paste0("Selected Country"),
              transforms = list( list(
                             type = 'filter',
                             target = ~country,
