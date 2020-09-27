@@ -10,9 +10,8 @@ stringr
 forcats
 gridExtra
 plotly
-scales
-forecast
 iterators
 itertools
-shiny
+scales
+forecast
 benford.analysis
