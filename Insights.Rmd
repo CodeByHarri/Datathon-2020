@@ -9,7 +9,6 @@ output:
     collapsed: true
     number_sections: false
     toc_depth: 1
-    # code_folding: hide
 editor_options: 
   chunk_output_type: inline
 ---
@@ -726,35 +725,6 @@ Electricity consumption can be attributed to weather, seasonality, business cycl
 ```
 
 
-<!-- The top plot in figure 1. is a time-series of electricity consumption in France. The bottom two plots show a SARIMAX model predicting energy consumption in 2019 vs 2020, having been trained on the previous 4 years worth of data. Table 1 shows the accuracy of this model on various European countries. The methodology behind this is explained in Appendix 4.1.  -->
-
-<!-- The objective of this plot and table is to illustrate the predictability of electricity consumption data during a normal year vs a pandemic enduced year. The change is clearly picked up in the drastic changes in accuracy shown in table 1. Electricity consumption can be attributed to weather, seasonality, business cycles & base load. Weather and seasonality are in present moment indicators. The temperature causes one to use heating and cooling measures. Seasonality will effect the duration of lighting usage. Business cycles and base load (level of business activity) can be presumptiously reactive to conditions unlike weather and seasonality which are reactive in the moment. Hence, electricity consumption attributed to business cycles and base load can be a forward looking indicator into economic activity. -->
-
-<!-- When diving into the plots individually of each country, it is clear that electricity consumption is reactive to policy changes. Using France as an example, their full lockdown began 12 weeks into 2020 and ended in week 20. The bottom right plot in figure 1 shows the forecast is almost perfectly out of place between week 12 and 20, before lining up again with the actual consumption.  -->
-
-<!-- \begin{table}[!htbp] \centering  -->
-<!--   \caption{Accuracy of SARIMAX on various countries} -->
-<!--   \label{tab:my-table} -->
-<!-- \begin{tabular}{llllll} -->
-<!-- \\[-1.8ex]\hline  -->
-<!-- \hline \\[-1.8ex]  -->
-<!--  & ME & RMSE & MAE & MPE & MAPE \\ -->
-<!-- \hline \\[-1.8ex]  -->
-<!-- FRANCE TEST 2019 & -2925.663 & 90265.63 & 70169.87 & -0.4553922 & 5.26192 \\ -->
-<!-- FRANCE TEST 2020 & -107436.7 & 143925.8 & 114499.1 & -9.782641 & 10.21085 \\ -->
-<!-- GERMANY TEST 2019 & 610927.5 & 672348.8 & 649246.9 & 11.0203 & 11.92293 \\ -->
-<!-- GERMANY TEST 2020 & -264620.9 & 407832.7 & 318019.9 & -5.713203 & 6.627528 \\ -->
-<!-- SPAIN TEST 2019 & 6880.948 & 49946.31 & 40349.3 & 0.4713497 & 5.799492 \\ -->
-<!-- SPAIN TEST 2020 & -50412.72 & 68669.14 & 58031.49 & -8.72553 & 9.714945 \\ -->
-<!-- UNITED KINGDOM 2019 & 7891.58 & 90497.34 & 62057.25 & 0.07401255 & 4.054127 \\ -->
-<!-- UNITED KINGDOM 2020 & -128479.9 & 172001.5 & 138371.7 & -9.760755 & 10.28156 \\ -->
-<!-- SWEDEN 2019 & -580.2107 & 26802.2 & 21601.13 & -0.7898409 & 5.681146 \\ -->
-<!-- SWEDEN 2020 & -16267.63 & 27859.37 & 21362.1 & -4.376811 & 5.734472 \\ -->
-<!-- ITALY 2019 &  90675.5 & 105149.6 & 95438.57 & 10.63521 & 11.47715 \\ -->
-<!-- ITALY 2020 &  91497.45 & 136313.6 & 115616.3 & 11.01898 & 15.24938 \\ -->
-<!-- \hline \\[-1.8ex]  -->
-<!-- \end{tabular} -->
-<!-- \end{table} -->
 
 
 
@@ -1040,10 +1010,76 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
 
 <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 
-
+#### VIC DIFF 
 ```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
+aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+temp = list.files("ausdata/VIC/",pattern="*.csv")
+for (i in 1:length(temp)){
+  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+  aus = rbind(aus, ausx)
+}
+aus = aus[c(-1,-5)]
+aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+aus2018 = subset(aus, SETTLEMENTDATE >= "2018-01-01" & SETTLEMENTDATE <= "2018-08-31")
+aus2019 = subset(aus, SETTLEMENTDATE >= "2019-01-01" & SETTLEMENTDATE <= "2019-08-31")
+aus2020 = subset(aus, SETTLEMENTDATE >= "2020-01-01" & SETTLEMENTDATE <= "2020-08-31")
 
+# aus2019$MONTH  = strftime(aus2019$SETTLEMENTDATE ,"%m") %>% as.character()
+# aus2019$DAY  = strftime(aus2019$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+# 
+# aus2020$MONTH  = strftime(aus2020$SETTLEMENTDATE ,"%m") %>% as.character()
+# aus2020$DAY  = strftime(aus2020$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+aus2018 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2018,sum)
+# x1 = aggregate(RRP~DAY+MONTH,data=aus2019,sum)
+aus2019 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2019,sum)
+# y1 = aggregate(RRP~DAY+MONTH,data=aus2020,sum)
+aus2020 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2020,sum)
+
+# 
+# p = plot_ly() %>%
+#   add_trace( data = y1 , x = ~DAY, y = ~RRP, type = 'scatter',
+#              mode = 'lines',  color ="#blue", name = '2020 RRP', alpha = 0.7)  %>%
+#   add_trace( data = y2 , x = ~DAY, y = ~TOTALDEMAND, type = 'scatter',
+#              mode = 'lines',  color ="#red", name = '2020 DEMAND', alpha = 0.7) %>% layout(yaxis = list(type = "log"))
+# q = plot_ly() %>%
+#   add_trace( data = x1 , x = ~DAY, y = ~RRP, type = 'scatter',
+#              mode = 'lines',  color ="#blue", name = '2019 RRP', alpha = 0.7)  %>%
+#   add_trace( data = x2 , x = ~DAY, y = ~TOTALDEMAND, type = 'scatter',
+#              mode = 'lines',  color ="#red", name = '2019 DEMAND', alpha = 0.7) %>% layout(yaxis = list(type = "log"))
+# 
+# subplot(p,q, nrows=2)
+aus2018$week  = strftime(aus2018$SETTLEMENTDATE  ,"%V")
+aus2018$day  = strftime(aus2018$SETTLEMENTDATE, "%u")
+aus2018$hour  = strftime(aus2018$SETTLEMENTDATE, "%H")
+
+aus2019$week  = strftime(aus2019$SETTLEMENTDATE  ,"%V")
+aus2019$day  = strftime(aus2019$SETTLEMENTDATE, "%u")
+aus2019$hour  = strftime(aus2019$SETTLEMENTDATE, "%H")
+
+aus2020$week  = strftime(aus2020$SETTLEMENTDATE  ,"%V")
+aus2020$day  = strftime(aus2020$SETTLEMENTDATE, "%u")
+aus2020$hour  = strftime(aus2020$SETTLEMENTDATE, "%H")
+
+
+ausdiff20 = merge(aus2019, aus2020, by=c("week","day","hour"))
+ausdiff20$diff = (ausdiff20$TOTALDEMAND.y / ausdiff20$TOTALDEMAND.x)*100 -100
+ausdiff20[ausdiff20 == Inf] <- NA
+
+ausdiff19 = merge(aus2018, aus2019, by=c("week","day","hour"))
+ausdiff19$diff = (ausdiff19$TOTALDEMAND.y / ausdiff19$TOTALDEMAND.x)*100 -100
+ausdiff19[ausdiff19 == Inf] <- NA
+
+# ausdiff[order(ausdiff$SETTLEMENTDATE.y),]
+p = plot_ly() %>%
+  add_trace( data = ausdiff20 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+             mode = 'lines',  color ="#blue", name = '20-19 DIFF', alpha = 0.7) 
+q = plot_ly() %>%
+  add_trace( data = ausdiff19 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+             mode = 'lines',  color ="#red", name = '19-18 DIFF', alpha = 0.7)
+
+subplot(p,q,nrows=2) 
 
 ```
 
