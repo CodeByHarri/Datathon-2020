@@ -1,0 +1,433 @@
+---
+title: <center><h1>Can electricity consumption patterns tell us anything about the pandemic?</h1></center>
+output:
+  html_document:
+    theme: flatly
+    toc: false
+    toc_float: true
+    collapsed: false
+    number_sections: false
+    toc_depth: 1
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(scales)
+library(forecast)
+
+```
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+url = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_202009_VIC1.csv"
+
+data = read.csv(url)
+tail = data %>% tail(800)
+tail$SETTLEMENTDATE = as.POSIXct(tail$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+tail$SETTLEMENTDATE   = strftime(tail$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+demand = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=tail,sum)
+rrp = aggregate(RRP~SETTLEMENTDATE,data=tail,sum)
+
+
+time = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
+time$mday = time$mday - 7 
+
+ay2 <- list(
+  tickfont = list(color = "lightgreen"),
+  overlaying = "y",
+  side = "right",
+  title = "$ RRP"
+)
+
+ay1 <- list(
+  tickfont = list(color = "blue"),
+  side = "left",
+  title = "TOTAL DEMAND (MW)"
+)
+
+
+x1 = plot_ly() %>%
+  add_trace( data = demand[c(-1,-length(demand$SETTLEMENTDATE)),], x = ~SETTLEMENTDATE, y = ~TOTALDEMAND, type = 'scatter',
+             mode = 'lines', name = 'DEMAND', line = list( color = 'blue') )
+
+
+x1 = x1 %>% 
+  add_trace( data = rrp[c(-1,-length(rrp$SETTLEMENTDATE)),], x = ~SETTLEMENTDATE, y = ~RRP, type = 'scatter',
+             mode = 'lines',  name = 'PRICE $', yaxis = "y2", line = list( color = 'lightgreen')) %>% layout(
+    title = "CURRENT DEMAND & RRP", yaxis2 = ay2, yaxis = ay1,
+    xaxis = list(title="Date")) %>%
+    layout(xaxis = list(
+        range = 
+            c(as.numeric(as.POSIXct(gsub(" AEST", "", time), format="%Y-%m-%d"))*1000,
+              as.numeric(as.POSIXct(format(Sys.time(), "%Y-%m-%d"), format="%Y-%m-%d"))*1000),
+        type = "date"))
+
+
+x1 %>% layout(xaxis = list(rangeslider = list(type = "date"))) %>% layout(showlegend = FALSE)
+
+
+```
+
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam bibendum, mi a elementum ullamcorper, tortor arcu rutrum leo, ultricies eleifend massa metus elementum elit. Proin bibendum scelerisque nulla, vitae malesuada tellus lacinia in. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus vitae placerat quam, a eleifend libero. Nullam iaculis imperdiet risus, at faucibus felis eleifend nec. Quisque feugiat scelerisque ex, vitae vulputate purus accumsan eget. Ut mauris ex, volutpat nec venenatis vel, pretium non lorem. Sed at turpis id sapien lacinia mattis. Etiam dictum massa at congue convallis.
+
+Ut vitae ante lectus. Nullam convallis commodo est, id maximus lacus commodo in. Duis quis diam eu sapien molestie condimentum at ut felis. Duis viverra sapien id est imperdiet interdum. Vestibulum id libero vitae risus bibendum aliquet in accumsan ligula. Duis lobortis sem sollicitudin, tempor est sit amet, rhoncus lectus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ut dui non nunc imperdiet gravida eleifend non sem. Curabitur ex turpis, semper ut lorem vel, auctor egestas magna. Sed vel tincidunt mi.
+
+Praesent turpis elit, finibus eu enim vel, vestibulum mollis dolor. Sed et erat et arcu mollis tristique sed vel urna. Fusce augue mi, pulvinar ac ultrices et, gravida tincidunt dui. Praesent malesuada urna id malesuada ultricies. Sed sit amet lobortis urna. Suspendisse lorem ex, ornare vel nisl at, rhoncus semper lorem. Aliquam erat volutpat. Nulla scelerisque augue dui, eu ornare elit imperdiet at. Nam ultricies faucibus ultricies. Pellentesque fermentum quam eu tincidunt consequat. Sed id turpis at purus tincidunt tristique eu vitae enim.
+
+Maecenas commodo diam a ante facilisis cursus. Pellentesque sagittis, metus eleifend consectetur facilisis, elit ex sodales neque, vel ullamcorper lectus justo in arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed in maximus est, ut egestas nibh. Donec sollicitudin dignissim ligula. Nulla sodales eros ut mattis vehicula. In laoreet non lacus et facilisis. Etiam sed ex nec lorem fringilla viverra non sed libero. Suspendisse non ultricies tellus, sit amet vulputate ex. Sed tristique convallis elit, a efficitur libero. Vivamus ultricies velit nunc, at gravida quam aliquam vel. Mauris vitae tristique lectus, pharetra porttitor quam. Quisque auctor dapibus placerat. Mauris feugiat lorem non felis imperdiet, ac elementum risus suscipit. In eu diam ac nisl maximus auctor id ut ligula. Nulla ut gravida nibh.
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
+# dfwide = dfwide[-1]
+# 
+# 
+# 
+# euro2019 = dfwide[(dfwide$end >= "2019-01-01	" & dfwide$end <= "2019-08-31"),]
+# euro2020 = dfwide[(dfwide$end >= "2020-01-01	" & dfwide$end <= "2020-08-31"),]
+# 
+# euro2019$week  = strftime(euro2019$end ,"%V")
+# euro2019$day  = strftime(euro2019$end, "%u")
+# euro2020$week  = strftime(euro2020$end ,"%V")
+# euro2020$day  = strftime(euro2020$end, "%u")
+# 
+# euro = merge(euro2019, euro2020, by=c("week","day","country"))
+# euro$diff = (euro$load.y / euro$load.x)*100 -100
+# euro[euro == Inf] <- NA
+# 
+# p <- plot_ly() %>%
+#   add_trace( data = euro, x = ~end.y, y = ~diff, type = 'scatter',
+#              mode = 'lines', color = ~as.factor(country), alpha = 0.7)
+# p <- plotly_build(p)
+# 
+# legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
+# 
+# for(i in seq_along(p$x$data)){
+#   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+# }
+# 
+# #### LONG FORMAT DATA
+# # fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
+# # xy.list <- as.list(as.data.frame((df)))
+# # for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
+# #                                               name = paste0(i),  type = 'scatter',
+# #                                               mode = 'lines',evaluate = TRUE) }
+# 
+# p = p %>% layout(title = 'Energy Consumption Change (%) in Western Europe 2020-2019 Adjusted for Seasonality',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'Change (%)'))
+# 
+# p = p %>%
+#     layout(xaxis = list(
+#         range =
+#             c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
+#               as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+#         type = "date"))
+# 
+# p
+```
+
+
+```{r fig.cap="Figure 1: Descriptive Plots" , echo=FALSE, fig.align='left', fig.height=9, fig.width=26, results='hide'}
+
+# fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+# fr$end = fr$end %>% as.Date()
+# fr = aggregate(fr["load"], by=fr["end"], sum)
+# fr = fr[1:(length(fr$load)-1),]
+# fr = fr[(fr$end> "2018-01-01	" & fr$end < "2020-07-30"),]
+# df = fr
+# setwd("eurodata/")
+# temp = list.files(pattern="*.csv")
+# for (i in 1:length(temp)){
+#   fr = read.csv(temp[i], header = TRUE, stringsAsFactors = FALSE)
+#   fr = na.omit(fr)
+#   fr$end = fr$end %>% as.Date()
+#   fr = aggregate(fr["load"], by=fr["end"], sum)
+#   fr = fr[1:(length(fr$load)-1),]
+#   fr = fr[(fr$end> "2018-01-01	" & fr$end < "2020-07-30"),]
+#   fr[,paste0(temp[i])] = fr$load
+#   df = left_join(df, fr, by=c("end"))
+# }
+# df = df[, -grep("load", colnames(df))]
+# colnames(df) = c('end', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+# 
+# dfwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
+# 
+# write.csv(dfwide, 'widedata.csv')
+```
+
+
+
+```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+# aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# # setwd("ausdata/VIC/")
+# temp = list.files("ausdata/VIC/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   # namex =  gsub('PRICE_AND_DEMAND_', '', temp[i])
+#   # namex =  gsub('_VIC1.csv', '', namex)
+#   aus = rbind(aus, ausx)
+# }
+# 
+# finalaus = aus
+# victrain = aus[(aus$SETTLEMENTDATE >= "2018-01-01	" & aus$SETTLEMENTDATE <= "2020-01-01"),]
+# victest = aus[(aus$SETTLEMENTDATE >= "2020-01-01	" & aus$SETTLEMENTDATE <= "2020-08-30"),]
+# 
+# aus = read.csv("ausdata/NSW/PRICE_AND_DEMAND_201801_NSW1.csv", header =TRUE, stringsAsFactors = FALSE)
+# aus$SETTLEMENTDATE = aus$SETTLEMENTDATE %>% as.Date()
+# aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+# aus = aus %>% filter(TOTALDEMAND > 10000)
+# 
+# temp = list.files("ausdata/NSW/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/NSW/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   ausx$SETTLEMENTDATE = ausx$SETTLEMENTDATE %>% as.Date()
+#   ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+#   ausx = ausx %>% filter(TOTALDEMAND >= 10000)
+#   # namex =  gsub('PRICE_AND_DEMAND_', '', temp[i])
+#   # namex =  gsub('_VIC1.csv', '', namex)
+#   aus = rbind(aus, ausx)
+# }
+# 
+# aus$NSW = aus$TOTALDEMAND
+# aus$VIC = finalaus$TOTALDEMAND
+# aus = aus[, -grep("TOTALDEMAND", colnames(aus))]
+# auswide = gather(aus, state, load, NSW:VIC, factor_key=TRUE)
+# 
+# 
+# weather = read.csv(paste0("ausdata/vicweather.csv"), header = TRUE, stringsAsFactors = FALSE)
+# weather = gather(weather, Month, temp, Jan:Dec, factor_key=TRUE)
+# weather$Date = as.Date(with(weather, paste(Year, Month,'30',sep="-")), "%Y-%b-%d")
+# weather = weather[(weather$Date >= "2018-01-01	" & weather$Date <= "2020-08-30"),]
+# weather$temp = rescale(weather$temp, to=c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
+# weather = weather[order(as.Date(weather$Date, format="%Y/%m/%d")),]
+# 
+# 
+# rainfall = read.csv(paste0("ausdata/vicrainfall.csv"), header = TRUE, stringsAsFactors = FALSE)
+# rainfall = gather(rainfall, Month, rain, Jan:Dec, factor_key=TRUE)
+# rainfall$Date = as.Date(with(rainfall, paste(Year, Month,'30',sep="-")), "%Y-%b-%d")
+# rainfall = rainfall[(rainfall$Date >= "2018-01-01	" & rainfall$Date <= "2020-08-30"),]
+# rainfall$rain = rescale(rainfall$rain, c(min(auswide[auswide$state == 'VIC',]$load)*1.15,max(auswide[auswide$state == 'VIC',]$load)*0.85))
+# rainfall = rainfall[order(as.Date(rainfall$Date, format="%Y/%m/%d")),]
+# 
+# 
+# 
+# # # Create a daily Date object - helps my work on dates
+# # inds <- seq(as.Date("2018-01-01"), as.Date("2020-01-1"), by = "day")
+# # 
+# # ## Create a time series object
+# # set.seed(25)
+# # myts = ts(victrain$TOTALDEMAND,
+# #            start = c(2018, as.numeric(format(inds[1], "%j"))),
+# #            frequency = 7)
+# # 
+# # bestfit <- list(aicc=Inf)
+# # # Choose the best model by AICc
+# # for(i in 1:3) {
+# #   for (j in 1:3){
+# #     for (k in 1:3){
+# #     z1 <- fourier(ts(myts, frequency=7), K=i)
+# #     z2 <- fourier(ts(myts, frequency=365), K=j)
+# #     z3 <- fourier(ts(myts, frequency=30), K=k)
+# #     fit <- auto.arima(myts, xreg=cbind(z1, z2, z3), seasonal=F)
+# #     if(fit$aicc < bestfit$aicc) {
+# #       bestfit <- list(aicc=fit$aicc, i=i, j=j, k=k, fit=fit)
+# #     }
+# #     }
+# #   }
+# # }
+# # 
+# # summary(bestfit$fit)
+# # fcBESTFIT3 = forecast(bestfit$fit, xreg=cbind(
+# #                  fourier(ts(myts, frequency=7), K=bestfit$i, h=242),
+# #                  fourier(ts(myts, frequency=365), K=bestfit$j, h=242),
+# #                  fourier(ts(myts, frequency=30), K=bestfit$k, h=242)))
+# 
+# 
+# # saveRDS(fcBESTFIT3, file = "ausdata/bf3.rds")
+# fcBESTFIT3 = readRDS(file = "ausdata/bf3.rds")
+# 
+# # SARIMAXpred = data.frame(fcBESTFIT3$mean)
+# x = aus[(aus$SETTLEMENTDATE >= "2020-01-02	" & aus$SETTLEMENTDATE <= "2020-08-30"),]
+# SARIMAXpred = data.frame(date = x$SETTLEMENTDATE, mean = fcBESTFIT3$mean)
+# 
+# 
+# p <- plot_ly() %>%
+#   add_trace( data = auswide, x = ~SETTLEMENTDATE, y = ~load, type = 'scatter',
+#              mode = 'lines', color = ~as.factor(state), colors =c("#e63946", "#415a77"),alpha = 0.7)
+# 
+# 
+# p = p %>% add_trace(data = weather, x = ~Date, y = ~temp, type = 'scatter',line=list(color='#48cae4',dash='dashed'),
+#              mode = 'lines', name = 'VIC SCALED TEMP', alpha = 0.9)
+# 
+# p = p %>% add_trace(data = rainfall, x = ~Date, y = ~rain, type = 'scatter',line=list(color='#0077b6',dash='dashed'),
+#              mode = 'lines', name = 'VIC SCALED RAIN', alpha = 1)
+# 
+# p = p %>% add_trace(data = SARIMAXpred, x = ~date, y = ~mean, type = 'scatter',line=list(color='red',dash='dashed'),
+#              mode = 'lines', name = 'VIC SARIMAX', alpha = 1)
+# 
+# p <- plotly_build(p)
+# 
+# p = p %>% layout(title = 'Energy Consumption in Australia',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'Energy Consumption (MW)'))
+# 
+# p = p %>%
+#     layout(xaxis = list(
+#         range = 
+#             c(as.numeric(as.POSIXct("2018-01-01", format="%Y-%m-%d"))*1000,
+#               as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
+#         type = "date"))
+# 
+# 
+# legendItems <- list(NSW = 'legendonly', VIC = T, `VIC SCALED TEMP` = T, 
+#                     `VIC SCALED RAIN` = 'legendonly', `VIC SARIMAX` = 'legendonly')
+# 
+# for(i in seq_along(p$x$data)){
+#   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+# }
+# 
+# 
+# p = p %>% layout(xaxis = list(rangeslider = list(type = "date")))
+# 
+# vicplot1 = p # %>% layout(xaxis = list(range = c('2019-08-01', '2020-08-30')))
+
+```
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+# vic2019 = victrain[(victrain$SETTLEMENTDATE >= "2019-01-01	" & victrain$SETTLEMENTDATE <= "2019-08-31"),]
+# vic2020 = victest
+# vic2019$week  = strftime(vic2019$SETTLEMENTDATE ,"%V")
+# vic2019$day  = strftime(vic2019$SETTLEMENTDATE, "%u")
+# vic2020$week  = strftime(vic2020$SETTLEMENTDATE ,"%V")
+# vic2020$day  = strftime(vic2020$SETTLEMENTDATE, "%u")
+# vicdata = merge(vic2019, vic2020, by=c("week","day")) # NA's match
+# vicdata$diff = (vicdata$TOTALDEMAND.y /vicdata$TOTALDEMAND.x)*100 - 100
+# # melbrain = read.csv("melbrainfall.csv", header =TRUE, stringsAsFactors = FALSE)
+# # melbrain$Date  = seq(as.Date("2013-01-01"), as.Date("2020-09-14"), by = "day")
+# # melbrain = melbrain[(melbrain$Date >= "2020-01-01	" & melbrain$Date <= "2020-08-31"),]
+# # 
+# # melbrain$rain = rescale(melbrain$Rainfall.amount..millimetres., to=c(min(vicdata$diff)*1.15,max(vicdata$diff)*0.85))
+# 
+# 
+# 
+# p = plot_ly() %>%
+#   add_trace( data = vicdata, x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+#              mode = 'lines',  color ="#e63946", name = '% Difference \nbetween \n2020 & 2019', alpha = 0.7)
+# 
+# # p = p %>% add_trace(data = melbrain, x = ~Date, y = ~rain, type = 'scatter',line=list(color='#0077b6',dash='dashed'),
+# #              mode = 'lines', name = 'VIC SCALED RAIN', alpha = 1)
+# 
+# 
+# p = plotly_build(p)
+# 
+# p = p %>% layout(dragmode = 'pan',
+#   title = 'Energy Consumption change (%) in Victoria 2020-2019 Adjusted for Seasonality',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'Change (%)'))
+# 
+# p = p %>% layout(xaxis = list(
+#         range = c(as.numeric(as.POSIXct("2020-01-01", format="%Y-%m-%d"))*1000,
+#               as.numeric(as.POSIXct("2020-08-30", format="%Y-%m-%d"))*1000),
+#         type = "date"))
+# vicplot2 = p 
+# 
+# 
+# 
+# subplot(vicplot1, vicplot2, nrows=2,  shareX = TRUE) %>% layout(xaxis = list(range = c('2020-01-01', '2020-08-30')))
+```
+
+
+
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)
+# dfwide = dfwide[-1]
+# p <- plot_ly() %>%
+#   add_trace( data = dfwide, x = ~end, y = ~load, type = 'scatter',
+#              mode = 'lines', color = ~as.factor(country))
+# p <- plotly_build(p)
+# 
+# legendItems <- list(Austria = 'legendonly', Belgium= 'legendonly', Switzerland= 'legendonly', Germany= 'legendonly', Denmark= 'legendonly', Spain= 'legendonly', France= TRUE, UK= 'legendonly', Ireland= 'legendonly', Italy= TRUE, Luxembourg= 'legendonly', Netherlands= 'legendonly', Norway= 'legendonly', Portugal= 'legendonly', Sweden= 'legendonly')
+# 
+# for(i in seq_along(p$x$data)){
+#   p$x$data[[i]]$visible <- legendItems[[p$x$data[[i]]$name]]
+# }
+# 
+# #### LONG FORMAT DATA
+# # fig = plot_ly(df, x = ~end, y = ~Spain, name = "Spain", type = 'scatter', mode = 'lines', colors = "red")
+# # xy.list <- as.list(as.data.frame((df)))
+# # for(i in colnames(df)[-1]) { fig <- add_trace(fig, y=xy.list[[i]], x=xy.list[['end']],
+# #                                               name = paste0(i),  type = 'scatter',
+# #                                               mode = 'lines',evaluate = TRUE) }
+# 
+# p = p %>% layout(title = 'Energy Consumption in Western Europe',
+#          xaxis = list(title = 'Time'),
+#          yaxis = list(title = 'Energy Consumption (MW)'))
+# 
+# p = p %>%
+#     layout(xaxis = list(
+#         range =
+#             c(as.numeric(as.POSIXct("2018-00-01", format="%Y-%m-%d"))*1000,
+#               as.numeric(as.POSIXct("2020-07-30", format="%Y-%m-%d"))*1000),
+#         type = "date"))
+# 
+# p
+```
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# library(fpp2)
+# summary(elecdemand)
+# summary(elecdaily)
+# 
+# class(elecdemand)
+# 
+# 
+# x1 = autoplot(elecdemand[,c("Demand","Temperature")], facets=TRUE) +
+# xlab("Year: 2014") + ylab("") +
+# ggtitle("Half-hourly electricity demand: Victoria, Australia")
+# 
+# 
+# x2 = qplot(Temperature, Demand, data=as.data.frame(elecdemand)) +
+# ylab("Demand (GW)") + xlab("Temperature (Celsius)")
+# 
+# 
+# x3 = subplot(ggplotly(x1), ggplotly(x2))
+# 
+# cooling <- pmax(elecdemand[,"Temperature"], 18)
+# fit <- auto.arima(elecdemand[,"Demand"],
+# xreg = cbind(fourier(elecdemand, c(10,10,0)),
+# heating=elecdemand[,"Temperature"],
+# cooling=cooling))
+# 
+# temps <- subset(elecdemand[,"Temperature"],
+# start=NROW(elecdemand)-2*48+1)
+# fc <- forecast(fit,
+# xreg=cbind(fourier(temps, c(10,10,0)),
+# heating=temps, cooling=pmax(temps,18)))
+# x4 = autoplot(fc, include=14*48)
+# 
+# subplot(x4, x3)
+
+```
+
+
+
