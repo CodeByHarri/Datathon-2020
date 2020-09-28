@@ -51,6 +51,7 @@ library(plotly)
 library(itertools)
 library(scales)
 library(forecast)
+library(Rtsne)
 ```
 
 
@@ -842,154 +843,258 @@ p
 
 
 
-A quick look into anomalous number patterns in 2020 electricty load data in Western Europe.
-
-This takes a look at the first digit of the sum of electricity load of every hour in per country in western europe. In combination with *Law of large numbers*, Benfords Law should be able to tell us if there was a signficant change in 2020. 
 
 
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
-NOTE TO SELF: not enough data in hour to adhere to law of large numbers, need to trytransforming data into 15min periods to encapsulate this maybe? 
+aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+temp = list.files("ausdata/VIC/",pattern="*.csv")
+for (i in 1:length(temp)){
+  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+  aus = rbind(aus, ausx)
+}
+aus = aus[c(-1,-5)]
+aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+
+```
 
 
-<center> <h3>Benfords law on Electricity Load 2020 VS 2019 In Western Europe</h3> </center>
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+monthdata = function(data,sdate,edata){
+  temp = subset(data, SETTLEMENTDATE >= sdate & SETTLEMENTDATE <= edata)
+  temp2 = aggregate(RRP~SETTLEMENTDATE,data=temp,sum)
+  sub = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=temp,sum)
+  sub$RRP = temp2$RRP
+  sub$week  = strftime(sub$SETTLEMENTDATE  ,"%V")
+  sub$day  = strftime(sub$SETTLEMENTDATE, "%u")
+  sub$hour  = strftime(sub$SETTLEMENTDATE, "%H")
+  sub = unique(sub)
+  cols <- c("week", "day", "hour")
+  sub[cols] <- lapply(sub[cols], factor)
+  sub$TOTALDEMAND = sub$TOTALDEMAND %>% as.numeric()
+  sub$RRP = sub$RRP %>% as.numeric()
+  set.seed(42)
+  tsne <- Rtsne(sub[-1], check_duplicates = FALSE, pca = TRUE, perplexity=50, theta=0.0, dims=2)
+  
+  sub = c(tsne$Y %>% as.data.frame(), sub)
+  return(sub)
+}
+
+```
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+plotmonth = function(aus,num_month,end,month){
+  set.seed(42)
+  a <- list(
+  text = month,
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+  )
+  
+  
+  mon2018 = monthdata(aus,sprintf("2018-%s-01",num_month),sprintf("2018-%s-%s",num_month,end))
+  mon2019 = monthdata(aus,sprintf("2019-%s-01",num_month),sprintf("2019-%s-%s",num_month,end))
+  mon2020 = monthdata(aus,sprintf("2020-%s-01",num_month),sprintf("2020-%s-%s",num_month,end))
+  
+  mon = c(mon2018, mon2019, mon2020) %>% as.data.frame()
+  
+  plot_ly( ) %>% 
+      add_trace(data = mon, x = ~V1, y = ~V2, type = 'scatter', mode = 'markers', name = '2018', 
+                text = ~paste(SETTLEMENTDATE,'</br></br>','TOTAL DEMAND', TOTALDEMAND,'</br>',
+                              'RRP: $',RRP,'</br>', 'WEEK', week, '</br>', 'DAY',day,'</br>',
+                              'HOUR', hour, '</br>'),
+                marker = list(size = ~TOTALDEMAND, sizeref = 4000, sizemode = 'area', color = 'red', line = list(color = 'red'))) %>%
+   add_trace(data = mon, x = ~V1.1, y = ~V2.1, type = 'scatter', mode = 'markers', name = '2019', 
+                text = ~paste(SETTLEMENTDATE.1,'</br></br>','TOTAL DEMAND', TOTALDEMAND.1,'</br>',
+                              'RRP: $',RRP.1,'</br>', 'WEEK', week.1, '</br>', 'DAY',day.1,'</br>',
+                              'HOUR', hour.1, '</br>'),
+                marker = list(size = ~TOTALDEMAND.1, sizeref = 4000, sizemode = 'area', color = 'blue', line = list(color = 'blue'))) %>%
+   add_trace(data = mon, x = ~V1.2, y = ~V2.2, type = 'scatter', mode = 'markers', name = '2020', 
+                text = ~paste(SETTLEMENTDATE.2,'</br></br>','TOTAL DEMAND', TOTALDEMAND.2,'</br>',
+                              'RRP: $',RRP.2,'</br>', 'WEEK', week.2, '</br>', 'DAY',day.2,'</br>',
+                              'HOUR', hour.2, '</br>'),
+                marker = list(size = ~TOTALDEMAND.2, sizeref = 4000, sizemode = 'area', color = 'orange', line = list(color = 'orange')))%>% layout(annotations = a)
+  # %>% layout(title = month)
+}
+```
+
+
+<center> <h3>Monthly Electricity Consumption Patterns in Victoria using t-SNE</h3> </center>
+```{r , echo=FALSE, fig.align='left', fig.height=9, fig.width=9, results='show'}
+
+# jan = plotmonth(aus,01,31,'JAN') 
+# feb = plotmonth(aus,02,28,'FEB')
+# mar = plotmonth(aus,03,31,'MAR')
+# apr = plotmonth(aus,04,30,'APR')
+# may = plotmonth(aus,05,31,'MAY')
+# jun = plotmonth(aus,06,30,'JUN')
+# jul = plotmonth(aus,07,31,'JUL')
+# aug = plotmonth(aus,08,31,'AUG')
+# 
+# tsneplot = subplot(jan,feb,mar,apr,may,jun,jul,aug,nrows=4)  %>% layout(showlegend = FALSE)
+# saveRDS(tsneplot, file = "tsneplot.rds")
+
+
+tsneplot= readRDS(file = "tsneplot.rds")
+tsneplot
+
+#     add_annotations(
+#         text = "MONTHLY ELECTRICITY CONSUMPTION PATTERNS IN VICTORIA",
+#         x = 0.5,
+#         y = 0,
+#         yref = "paper",
+#         xref = "paper",
+#         xanchor = "center",
+#         yanchor = "bottom",
+#         yshift = 415,
+#         showarrow = FALSE,
+#         font = list(size = 15)
+#     ) 
+
+```
+
+
+
+<!-- <center> <h3>Benfords law on Electricity Load 2020 VS 2019 In Western Europe</h3> </center> -->
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
-library(benford.analysis)
-library(gridExtra)
-
-
-euro2020 = eurohourwide %>% filter(year == 2020) 
-euro2019 = eurohourwide %>% filter(year == 2019) 
-
-# eurodiff$load = euro2020$load - euro2019$load
-
-trends2020 = benford(euro2020$load, number.of.digits = 1, discrete = T, sign = "positive") 
-trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "positive") 
-# trendsdiff = benford(eurodiff$load, number.of.digits = 1, discrete = T, sign = "positive") 
-
-
-trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits, 
-                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
-
-trends2019$data = trends2019$data %>% mutate(bl=recode(data.digits, 
-                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
-
-trends2020$s.o.data = trends2020$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
-                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
-trends2019$s.o.data = trends2019$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
-                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
-
-# 
-# ggdiff1 = ggplot(trendsdiff$data,aes(x = data.digits, fill = data.digits)) + 
-#   geom_bar(position = "identity", fill = "#63FF83") + 
-#   theme_minimal() + xlab("First Digit")
+# library(benford.analysis)
+# library(gridExtra)
 # 
 # 
-# ggdiff2 = ggplot(trendsdiff$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
-#   geom_bar(position = "identity", fill = "#63FF83") + 
-#   theme_minimal() + xlab("Second Order First Digit")
-
-
-gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) + 
-  geom_bar(position = "identity", fill = "#90e0ef") + 
-  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
-  scale_y_continuous(sec.axis = sec_axis(~. /3))
-# + labs(title="Benfords Law")
-
-
-gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
-  geom_bar(position = "identity", fill = "#90e0ef") + 
-  theme_minimal() + xlab("Second Order First Digit") + geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
-  scale_y_continuous(sec.axis = sec_axis(~. /3))#+ labs(title="Second Order Benfords Law")
-
-
-
-gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) + 
-  geom_bar(position = "identity", fill = "#ade8f4") + 
-  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
-  scale_y_continuous(sec.axis = sec_axis(~. /3))
-
-
-gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
-  geom_bar(position = "identity", fill = "#ade8f4") + 
-  theme_minimal() + xlab("Second Order First Digit")+ geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
-  scale_y_continuous(sec.axis = sec_axis(~. /3))
-
-
-
-a <- list(
-  text = "2020 First Order Benfords Law",
-  xref = "paper",
-  yref = "paper",
-  yanchor = "bottom",
-  xanchor = "center",
-  align = "center",
-  x = 0.5,
-  y = 1,
-  showarrow = FALSE
-)
-
-b <- list(
-  text = "2020 Second Order Benfords Law",
-  xref = "paper",
-  yref = "paper",
-  yanchor = "bottom",
-  xanchor = "center",
-  align = "center",
-  x = 0.5,
-  y = 1,
-  showarrow = FALSE
-)
-
-c <- list(
-  text = "2019 First Order Benfords Law",
-  xref = "paper",
-  yref = "paper",
-  yanchor = "bottom",
-  xanchor = "center",
-  align = "center",
-  x = 0.5,
-  y = 1,
-  showarrow = FALSE
-)
-
-d <- list(
-  text = "2019 Second Order Benfords Law",
-  xref = "paper",
-  yref = "paper",
-  yanchor = "bottom",
-  xanchor = "center",
-  align = "center",
-  x = 0.5,
-  y = 1,
-  showarrow = FALSE
-)
-ay <- list(
-  overlaying = "y",
-  side = "right",
-  title = "Ideal Benfords Law"
-)
-
-
-subplot(ggplotly(gg1)%>%layout(annotations = a),
-        ggplotly(gg2)%>%layout(annotations = b), 
-        ggplotly(gg3)%>%layout(annotations = c),
-        ggplotly(gg4)%>%layout(annotations = d), 
-        nrows = 2,shareY = TRUE)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'), 
-            yaxis2 = list(showticklabels = T), yaxis4 = list(showticklabels = F), 
-            xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
-    add_annotations(
-        text = "First Digit in Hourly Load",
-        x = 0.5,
-        y = 0,
-        yref = "paper",
-        xref = "paper",
-        xanchor = "center",
-        yanchor = "bottom",
-        yshift = -35,
-        showarrow = FALSE,
-        font = list(size = 15)
-    ) 
+# euro2020 = eurohourwide %>% filter(year == 2020) 
+# euro2019 = eurohourwide %>% filter(year == 2019) 
+# 
+# # eurodiff$load = euro2020$load - euro2019$load
+# 
+# trends2020 = benford(euro2020$load, number.of.digits = 1, discrete = T, sign = "positive") 
+# trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "positive") 
+# # trendsdiff = benford(eurodiff$load, number.of.digits = 1, discrete = T, sign = "positive") 
+# 
+# 
+# trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# 
+# trends2019$data = trends2019$data %>% mutate(bl=recode(data.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# 
+# trends2020$s.o.data = trends2020$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# trends2019$s.o.data = trends2019$s.o.data %>% mutate(bl=recode(data.second.order.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# 
+# 
+# gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) + 
+#   geom_bar(position = "identity", fill = "#90e0ef") + 
+#   theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))
+# # + labs(title="Benfords Law")
+# 
+# 
+# gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
+#   geom_bar(position = "identity", fill = "#90e0ef") + 
+#   theme_minimal() + xlab("Second Order First Digit") + geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))#+ labs(title="Second Order Benfords Law")
+# 
+# 
+# 
+# gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) + 
+#   geom_bar(position = "identity", fill = "#ade8f4") + 
+#   theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))
+# 
+# 
+# gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) + 
+#   geom_bar(position = "identity", fill = "#ade8f4") + 
+#   theme_minimal() + xlab("Second Order First Digit")+ geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))
+# 
+# 
+# 
+# a <- list(
+#   text = "2020 First Order Benfords Law",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# 
+# b <- list(
+#   text = "2020 Second Order Benfords Law",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# 
+# c <- list(
+#   text = "2019 First Order Benfords Law",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# 
+# d <- list(
+#   text = "2019 Second Order Benfords Law",
+#   xref = "paper",
+#   yref = "paper",
+#   yanchor = "bottom",
+#   xanchor = "center",
+#   align = "center",
+#   x = 0.5,
+#   y = 1,
+#   showarrow = FALSE
+# )
+# ay <- list(
+#   overlaying = "y",
+#   side = "right",
+#   title = "Ideal Benfords Law"
+# )
+# 
+# 
+# subplot(ggplotly(gg1)%>%layout(annotations = a),
+#         ggplotly(gg2)%>%layout(annotations = b), 
+#         ggplotly(gg3)%>%layout(annotations = c),
+#         ggplotly(gg4)%>%layout(annotations = d), 
+#         nrows = 2,shareY = TRUE)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'), 
+#             yaxis2 = list(showticklabels = T), yaxis4 = list(showticklabels = F), 
+#             xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
+#     add_annotations(
+#         text = "First Digit in Hourly Load",
+#         x = 0.5,
+#         y = 0,
+#         yref = "paper",
+#         xref = "paper",
+#         xanchor = "center",
+#         yanchor = "bottom",
+#         yshift = -35,
+#         showarrow = FALSE,
+#         font = list(size = 15)
+#     ) 
 #%>% layout(title= "Benfords Law")
 
 # ggplotly(gg)
@@ -1008,34 +1113,34 @@ subplot(ggplotly(gg1)%>%layout(annotations = a),
 ```
 
 
-<div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 #### VIC DIFF 
 ```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
-aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
-temp = list.files("ausdata/VIC/",pattern="*.csv")
-for (i in 1:length(temp)){
-  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
-  aus = rbind(aus, ausx)
-}
-aus = aus[c(-1,-5)]
-aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
-aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
-aus2018 = subset(aus, SETTLEMENTDATE >= "2018-01-01" & SETTLEMENTDATE <= "2018-08-31")
-aus2019 = subset(aus, SETTLEMENTDATE >= "2019-01-01" & SETTLEMENTDATE <= "2019-08-31")
-aus2020 = subset(aus, SETTLEMENTDATE >= "2020-01-01" & SETTLEMENTDATE <= "2020-08-31")
+# aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+# temp = list.files("ausdata/VIC/",pattern="*.csv")
+# for (i in 1:length(temp)){
+#   ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+#   aus = rbind(aus, ausx)
+# }
+# aus = aus[c(-1,-5)]
+# aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+# aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+# aus2018 = subset(aus, SETTLEMENTDATE >= "2018-01-01" & SETTLEMENTDATE <= "2018-08-31")
+# aus2019 = subset(aus, SETTLEMENTDATE >= "2019-01-01" & SETTLEMENTDATE <= "2019-08-31")
+# aus2020 = subset(aus, SETTLEMENTDATE >= "2020-01-01" & SETTLEMENTDATE <= "2020-08-31")
 
 # aus2019$MONTH  = strftime(aus2019$SETTLEMENTDATE ,"%m") %>% as.character()
 # aus2019$DAY  = strftime(aus2019$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
 # 
 # aus2020$MONTH  = strftime(aus2020$SETTLEMENTDATE ,"%m") %>% as.character()
-# aus2020$DAY  = strftime(aus2020$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
-aus2018 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2018,sum)
-# x1 = aggregate(RRP~DAY+MONTH,data=aus2019,sum)
-aus2019 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2019,sum)
-# y1 = aggregate(RRP~DAY+MONTH,data=aus2020,sum)
-aus2020 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2020,sum)
+# # aus2020$DAY  = strftime(aus2020$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+# aus2018 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2018,sum)
+# # x1 = aggregate(RRP~DAY+MONTH,data=aus2019,sum)
+# aus2019 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2019,sum)
+# # y1 = aggregate(RRP~DAY+MONTH,data=aus2020,sum)
+# aus2020 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2020,sum)
 
 # 
 # p = plot_ly() %>%
@@ -1048,57 +1153,48 @@ aus2020 = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=aus2020,sum)
 #              mode = 'lines',  color ="#blue", name = '2019 RRP', alpha = 0.7)  %>%
 #   add_trace( data = x2 , x = ~DAY, y = ~TOTALDEMAND, type = 'scatter',
 #              mode = 'lines',  color ="#red", name = '2019 DEMAND', alpha = 0.7) %>% layout(yaxis = list(type = "log"))
+# # 
+# # subplot(p,q, nrows=2)
+# aus2018$week  = strftime(aus2018$SETTLEMENTDATE  ,"%V")
+# aus2018$day  = strftime(aus2018$SETTLEMENTDATE, "%u")
+# aus2018$hour  = strftime(aus2018$SETTLEMENTDATE, "%H")
 # 
-# subplot(p,q, nrows=2)
-aus2018$week  = strftime(aus2018$SETTLEMENTDATE  ,"%V")
-aus2018$day  = strftime(aus2018$SETTLEMENTDATE, "%u")
-aus2018$hour  = strftime(aus2018$SETTLEMENTDATE, "%H")
-
-aus2019$week  = strftime(aus2019$SETTLEMENTDATE  ,"%V")
-aus2019$day  = strftime(aus2019$SETTLEMENTDATE, "%u")
-aus2019$hour  = strftime(aus2019$SETTLEMENTDATE, "%H")
-
-aus2020$week  = strftime(aus2020$SETTLEMENTDATE  ,"%V")
-aus2020$day  = strftime(aus2020$SETTLEMENTDATE, "%u")
-aus2020$hour  = strftime(aus2020$SETTLEMENTDATE, "%H")
-
-
-ausdiff20 = merge(aus2019, aus2020, by=c("week","day","hour"))
-ausdiff20$diff = (ausdiff20$TOTALDEMAND.y / ausdiff20$TOTALDEMAND.x)*100 -100
-ausdiff20[ausdiff20 == Inf] <- NA
-
-ausdiff19 = merge(aus2018, aus2019, by=c("week","day","hour"))
-ausdiff19$diff = (ausdiff19$TOTALDEMAND.y / ausdiff19$TOTALDEMAND.x)*100 -100
-ausdiff19[ausdiff19 == Inf] <- NA
-
-# ausdiff[order(ausdiff$SETTLEMENTDATE.y),]
-p = plot_ly() %>%
-  add_trace( data = ausdiff20 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
-             mode = 'lines',  color ="#blue", name = '20-19 DIFF', alpha = 0.7) 
-q = plot_ly() %>%
-  add_trace( data = ausdiff19 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
-             mode = 'lines',  color ="#red", name = '19-18 DIFF', alpha = 0.7)
-
-subplot(p,q,nrows=2) 
+# aus2019$week  = strftime(aus2019$SETTLEMENTDATE  ,"%V")
+# aus2019$day  = strftime(aus2019$SETTLEMENTDATE, "%u")
+# aus2019$hour  = strftime(aus2019$SETTLEMENTDATE, "%H")
+# 
+# aus2020$week  = strftime(aus2020$SETTLEMENTDATE  ,"%V")
+# aus2020$day  = strftime(aus2020$SETTLEMENTDATE, "%u")
+# aus2020$hour  = strftime(aus2020$SETTLEMENTDATE, "%H")
+# 
+# 
+# ausdiff20 = merge(aus2019, aus2020, by=c("week","day","hour"))
+# ausdiff20$diff = (ausdiff20$TOTALDEMAND.y / ausdiff20$TOTALDEMAND.x)*100 -100
+# ausdiff20[ausdiff20 == Inf] <- NA
+# 
+# ausdiff19 = merge(aus2018, aus2019, by=c("week","day","hour"))
+# ausdiff19$diff = (ausdiff19$TOTALDEMAND.y / ausdiff19$TOTALDEMAND.x)*100 -100
+# ausdiff19[ausdiff19 == Inf] <- NA
+# 
+# # ausdiff[order(ausdiff$SETTLEMENTDATE.y),]
+# p = plot_ly() %>%
+#   add_trace( data = ausdiff20 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+#              mode = 'lines',  color ="#blue", name = '20-19 DIFF', alpha = 0.7) 
+# q = plot_ly() %>%
+#   add_trace( data = ausdiff19 , x = ~SETTLEMENTDATE.y, y = ~diff, type = 'scatter',
+#              mode = 'lines',  color ="#red", name = '19-18 DIFF', alpha = 0.7)
+# 
+# subplot(p,q,nrows=2) 
 
 ```
 
 
 
 
-```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 
 
-```
 
-
-
-```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-
-
-
-```
 
 
 ```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
