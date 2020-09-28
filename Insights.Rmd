@@ -24,19 +24,6 @@ editor_options:
 3. **Anomalous Behaviours**: *An experimental approach to detect change in production activity*
 
 
-
-
-things left to do: 
-
-* data wrangle australian, and american data into the same format as euro data for hourly data 
-* remake the apps to acconomadate for extra data. 
-
-* make an australia only data that by 5min to apply befords law
-* look into a victoria only model with weather forecasts for insights app with a business application. 
-
-
-
-
 <center> <h2>**Policy Impact**: 2020 vs 2019 Intervential anlaysis & SARIMAX</h2> </center>
 
 Let's begin with a look at the day to day difference between 2020 and 2019 across the world adjusted for seasonality. Exploring the COVID-19 responses across the world, it is evident that the difference in electricity consumption drastically drops based on the economic policies placed in each country. For example, Italy who began nation wide lockdowns on March 9, saw the immediate impact in electricity consumption over the next couple days. On March 22nd all factories are closed and all nonessential production is halted in Italy causing a further dip consumption difference. This same story can be told with several other countries. Interestingly, Sweden who chose a mitigation strategy still showed very little difference compared to it's Scandinavian neighbours Norway and Denmark who too much more preventitive measures. 
@@ -841,8 +828,7 @@ p
 
 <center> <h2>**Anomalous Behaviours**: An experimental approach to detect change in production activity</h2> </center>
 
-
-
+t-SNE (t-distributed Stochastic Neighbor Embedding) is something called nonlinear dimensionality reduction. This is an algorithm which allows us to separate data that cannot be separated by any straight line. Illustrated below are 3 years worth of Electricity Demand Data from Victoria. 2018 in red, 2019 in blue & 2020 in orange. Hovering over the data, we are able to see what factors such as RRP of electricity, week, day & hour impact the cluster formed. Points which appear further away are indicative of outliers. Interestingly, March 2020 appears to be the only occurance where the pattern breaks.  
 
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
@@ -1115,7 +1101,7 @@ tsneplot
 
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
-#### VIC DIFF 
+
 ```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 # aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
