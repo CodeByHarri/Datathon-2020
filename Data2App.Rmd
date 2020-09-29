@@ -123,6 +123,28 @@ x2 = plot_ly() %>%
 ```
 
 
+```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+webpage <- read.csv(url("https://trends.google.com/trends/api/widgetdata/multiline/csv?req=%7B%22time%22%3A%222020-09-28T15%5C%5C%3A36%5C%5C%3A29%202020-09-29T15%5C%5C%3A36%5C%5C%3A29%22%2C%22resolution%22%3A%22EIGHT_MINUTE%22%2C%22locale%22%3A%22en-GB%22%2C%22comparisonItem%22%3A%5B%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22the%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22to%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22of%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22and%22%7D%5D%7D%7D%5D%2C%22requestOptions%22%3A%7B%22property%22%3A%22%22%2C%22backend%22%3A%22CM%22%2C%22category%22%3A0%7D%7D&token=APP6_UEAAAAAX3Sl_fXekhRxTtX2IWXt6DxoFbhXOluf&tz=-600"), header = T, skip = 2)
+
+colnames(webpage) <- c("Time" ,"theVictoria.", "toVictoria." , "ofVictoria." , "andVictoria.")
+cols <- c( "theVictoria.", "toVictoria." , "ofVictoria." , "andVictoria.")
+webpage[cols] <- lapply(webpage[cols], as.numeric)
+webpage$mean = rowMeans(webpage[2:5], na.rm=F)
+webpage$Time = gsub("T"," ",webpage$Time)
+webpage$Time = strftime(webpage$Time, "%Y-%m-%d %H:%M:00")
+webpage$Time = webpage$Time %>% as.POSIXct(format="%Y-%m-%d %H:%M:00")
+webpage = webpage[order(webpage$Time),]
+
+x3 = plot_ly() %>% 
+  add_trace( data = webpage , x = ~Time, y = ~mean, type = 'scatter',
+             mode = 'lines', name = 'Internet Search Traffic', line = list( color = '#03045e') )%>% 
+  layout( yaxis = list(title="Mean Google Search Volume of: the, to, of & and"), xaxis = list(title=" "), title = "CURRENT ESTIMATED \nINTERNET TRAFFIC", dragmode='pan')
+
+```
+
+
+
 
 
 *note to self* : 
@@ -131,7 +153,12 @@ x2 = plot_ly() %>%
 * make the rvest urls dynamic using sys.time(), strtime and gsub
 
 
-<center><h2>Dashboarding variables of the production function</h2></center>
+<center><h2>Dashboarding variables of the production function - Data localised to Victoria, Australia</h2></center>
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+x1
+```
+
 
 <style type="text/css">
 .title {
@@ -144,11 +171,12 @@ x2 = plot_ly() %>%
 
 </style>
 
+
 <div class="row" style="padding-top: 30px;">
 <div class="col-sm-6">
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
-x1
+x3
 ```
 
 </div>
