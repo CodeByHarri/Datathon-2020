@@ -11,6 +11,8 @@ forcats
 plotly
 scales
 forecast
+xml2
+rvest
 gridExtra
 iterators
 itertools

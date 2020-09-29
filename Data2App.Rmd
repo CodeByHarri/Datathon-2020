@@ -18,7 +18,7 @@ library(dplyr)
 library(plotly)
 library(scales)
 library(forecast)
-
+library(rvest)
 ```
 
 
@@ -34,7 +34,7 @@ rrp = aggregate(RRP~SETTLEMENTDATE,data=tail,sum)
 
 
 time = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
-time$mday = time$mday - 7 
+time$mday = time$mday - 1 
 
 ay2 <- list(
   tickfont = list(color = "lightgreen"),
@@ -52,10 +52,7 @@ ay1 <- list(
 
 x1 = plot_ly() %>%
   add_trace( data = demand[c(-1,-length(demand$SETTLEMENTDATE)),], x = ~SETTLEMENTDATE, y = ~TOTALDEMAND, type = 'scatter',
-             mode = 'lines', name = 'DEMAND', line = list( color = 'blue') )
-
-
-x1 = x1 %>% 
+             mode = 'lines', name = 'DEMAND', line = list( color = 'blue') ) %>% 
   add_trace( data = rrp[c(-1,-length(rrp$SETTLEMENTDATE)),], x = ~SETTLEMENTDATE, y = ~RRP, type = 'scatter',
              mode = 'lines',  name = 'PRICE $', yaxis = "y2", line = list( color = 'lightgreen')) %>% layout(
     title = "CURRENT DEMAND & RRP", yaxis2 = ay2, yaxis = ay1,
@@ -67,10 +64,105 @@ x1 = x1 %>%
         type = "date"))
 
 
-x1 %>% layout(xaxis = list(rangeslider = list(type = "date"))) %>% layout(showlegend = FALSE)
+x1 = x1  %>% layout(showlegend = FALSE, dragmode='pan') %>% layout(xaxis = list(rangeslider = list(type = "date")))
 
 
 ```
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+webpage <- read_html("http://www.bom.gov.au/places/vic/melbourne/observations/melbourne-(olympic-park)/")
+
+tbls_ls <- webpage %>%
+        html_nodes("table") %>%
+        .[3:4] %>%
+        html_table(fill = TRUE)
+
+
+weather1 = tbls_ls[[1]]
+
+weather2 = tbls_ls[[2]]
+```
+
+
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+cols <- c("Wind Direction")
+weather1[cols] <- lapply(weather1[cols], factor)
+cols <- c("Humidity(%)")
+weather1[cols] <- lapply(weather1[cols], as.numeric)
+
+cols <- c("Wind Direction")
+weather2[cols] <- lapply(weather2[cols], factor)
+cols <- c("Humidity(%)")
+weather2[cols] <- lapply(weather2[cols], as.numeric)
+
+time = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
+time$mday = time$mday - 1 
+
+weather2$`Time (AEST)` =  lapply(weather2, function(x) paste(gsub(" AEST", "", time),x))$`Time (AEST)`
+weather2$`Time (AEST)` = as.POSIXct(weather2$`Time (AEST)`, format="%Y-%m-%d %I:%M %p")
+weather1$`Time (AEST)` = as.POSIXct(weather1$`Time (AEST)`, format="%I:%M %p")
+weather = rbind(weather1,weather2)
+
+x2 = plot_ly() %>%
+  add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Temp (°C)`, type = 'scatter',
+             mode = 'lines', name = 'Temp (°C)', line = list( color = '#03045e') ) %>%
+  add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Feels Like (°C)`, type = 'scatter',
+             mode = 'lines', name = 'Feels Like (°C)', line = list( color = '#023e8a') )%>%
+  add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Humidity(%)`, type = 'scatter',
+             mode = 'lines', name = 'Humidity(%)', line = list( color = '#0077b6') )%>%
+  add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Rainfall since 9 am (mm)`, type = 'scatter',
+             mode = 'lines', name = 'Rainfall since 9 am (mm)', line = list( color = '#0096c7') )%>% 
+  layout( yaxis = list(type = "log",title="Units in Legend"), xaxis = list(title=" "), title = "CURRENT WEATHER", dragmode='pan')
+
+```
+
+
+
+
+*note to self* : 
+* use/learn css to format around the subplot discrepancies in plotly 
+* rewrite the time function that syncs x axis
+* make the rvest urls dynamic using sys.time(), strtime and gsub
+
+
+<center><h2>Dashboarding variables of the production function</h2></center>
+
+<style type="text/css">
+.title {
+  display: none;
+}
+
+#getting-started img {
+  margin-right: 10px;
+}
+
+</style>
+
+<div class="row" style="padding-top: 30px;">
+<div class="col-sm-6">
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
+x1
+```
+
+</div>
+<div class="col-sm-6">
+
+```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
+
+x2 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
+# subplot(x1, x2, nrows=2,shareX = TRUE)%>% layout(legend = list(orientation = 'h'),dragmode='pan')
+
+```
+
+</div>
+
 
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam bibendum, mi a elementum ullamcorper, tortor arcu rutrum leo, ultricies eleifend massa metus elementum elit. Proin bibendum scelerisque nulla, vitae malesuada tellus lacinia in. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus vitae placerat quam, a eleifend libero. Nullam iaculis imperdiet risus, at faucibus felis eleifend nec. Quisque feugiat scelerisque ex, vitae vulputate purus accumsan eget. Ut mauris ex, volutpat nec venenatis vel, pretium non lorem. Sed at turpis id sapien lacinia mattis. Etiam dictum massa at congue convallis.
@@ -80,6 +172,7 @@ Ut vitae ante lectus. Nullam convallis commodo est, id maximus lacus commodo in.
 Praesent turpis elit, finibus eu enim vel, vestibulum mollis dolor. Sed et erat et arcu mollis tristique sed vel urna. Fusce augue mi, pulvinar ac ultrices et, gravida tincidunt dui. Praesent malesuada urna id malesuada ultricies. Sed sit amet lobortis urna. Suspendisse lorem ex, ornare vel nisl at, rhoncus semper lorem. Aliquam erat volutpat. Nulla scelerisque augue dui, eu ornare elit imperdiet at. Nam ultricies faucibus ultricies. Pellentesque fermentum quam eu tincidunt consequat. Sed id turpis at purus tincidunt tristique eu vitae enim.
 
 Maecenas commodo diam a ante facilisis cursus. Pellentesque sagittis, metus eleifend consectetur facilisis, elit ex sodales neque, vel ullamcorper lectus justo in arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed in maximus est, ut egestas nibh. Donec sollicitudin dignissim ligula. Nulla sodales eros ut mattis vehicula. In laoreet non lacus et facilisis. Etiam sed ex nec lorem fringilla viverra non sed libero. Suspendisse non ultricies tellus, sit amet vulputate ex. Sed tristique convallis elit, a efficitur libero. Vivamus ultricies velit nunc, at gravida quam aliquam vel. Mauris vitae tristique lectus, pharetra porttitor quam. Quisque auctor dapibus placerat. Mauris feugiat lorem non felis imperdiet, ac elementum risus suscipit. In eu diam ac nisl maximus auctor id ut ligula. Nulla ut gravida nibh.
+
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 # dfwide = read.csv("widedata.csv", header =TRUE, stringsAsFactors = FALSE)

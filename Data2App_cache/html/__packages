@@ -11,3 +11,5 @@ forcats
 plotly
 scales
 forecast
+xml2
+rvest

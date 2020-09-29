@@ -337,6 +337,8 @@ p
 <center> <h2>**Production Function**: An experimental approach to model electricity production</h2> </center>
 
 
+\[energyProduction = f(weatherForecast,weekOfYear, dayOfWeek, hourOfDay, holidays)\]
+
 
 
 
