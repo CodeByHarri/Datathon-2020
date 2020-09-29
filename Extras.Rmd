@@ -12,6 +12,21 @@ output:
 editor_options: 
   chunk_output_type: inline
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE, cache=TRUE)
+library(ggplot2)
+library(tidyverse)
+library(gridExtra)
+library(dplyr)
+library(plotly)
+library(itertools)
+library(scales)
+library(forecast)
+library(Rtsne)
+library(benford.analysis)
+
+```
+
 
 ```{r 1, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
@@ -269,7 +284,7 @@ editor_options:
 ```
 
 
-
+<center> <h2>**SARIMAX**: Forecasting electricity consumption</h2> </center>
 
 ```{r , echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 # worlddata = gather(worlddata, country, load, Australia:US, factor_key=TRUE)
@@ -631,5 +646,181 @@ tsneplot
 #         showarrow = FALSE,
 #         font = list(size = 15)
 #     ) 
+
+```
+
+
+
+<center> <h3>Benfords law on Electricity Load 2020 VS 2019 In Western Europe</h3> </center>
+```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+
+
+# WESTERN EURO DATA HOUR
+
+fr = read.csv("eurodata/fr.csv", header =TRUE, stringsAsFactors = FALSE)
+fr = na.omit(fr)
+fr$hour = substr(fr$end,11,nchar(fr$end)-12)
+fr$year = substr(fr$end,1,nchar(fr$end)-21)
+fr  = aggregate(load ~ hour + year, data = fr, mean)
+df = fr
+setwd("eurodata/")
+temp = list.files(pattern="*.csv")
+for (i in 1:length(temp)){
+  fr = read.csv(temp[i], header =TRUE, stringsAsFactors = FALSE)
+  fr = na.omit(fr)
+  fr$hour = substr(fr$end,11,nchar(fr$end)-12)
+  fr$year = substr(fr$end,1,nchar(fr$end)-21)
+  fr  = aggregate(load ~ hour + year, data = fr, mean)
+  fr[,paste0(temp[i])] = fr$load
+  df = left_join(df, fr, by=c("hour","year"))
+}
+df = df[, -grep("load", colnames(df))]
+colnames(df) = c('hour','year', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+
+eurohourwide = gather(df, country, load, Austria:Sweden, factor_key=TRUE)
+eurohourwide = eurohourwide[-3]
+
+country = c('Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden')
+
+eurohourwide <- eurohourwide[order(eurohourwide$year), ]
+
+
+euro2020 = eurohourwide %>% filter(year == 2020)
+euro2019 = eurohourwide %>% filter(year == 2019)
+
+# eurodiff$load = euro2020$load - euro2019$load
+
+trends2020 = benford(euro2020$load, number.of.digits = 1, discrete = T, sign = "positive")
+trends2019 = benford(euro2019$load, number.of.digits = 1, discrete = T, sign = "positive")
+# trendsdiff = benford(eurodiff$load, number.of.digits = 1, discrete = T, sign = "positive")
+
+
+trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits,
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
+trends2019$data = trends2019$data %>% mutate(bl=recode(data.digits,
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
+trends2020$s.o.data = trends2020$s.o.data %>% mutate(bl=recode(data.second.order.digits,
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+trends2019$s.o.data = trends2019$s.o.data %>% mutate(bl=recode(data.second.order.digits,
+                         `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+
+
+gg1 = ggplot(trends2020$data,aes(x = data.digits, fill = data.digits)) +
+  geom_bar(position = "identity", fill = "#90e0ef") +
+  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
+# + labs(title="Benfords Law")
+
+
+gg2 = ggplot(trends2020$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) +
+  geom_bar(position = "identity", fill = "#90e0ef") +
+  theme_minimal() + xlab("Second Order First Digit") + geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~. /3))#+ labs(title="Second Order Benfords Law")
+
+
+
+gg3 = ggplot(trends2019$data,aes(x = data.digits, fill = data.digits)) +
+  geom_bar(position = "identity", fill = "#ade8f4") +
+  theme_minimal() + xlab("First Digit")+ geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
+
+
+gg4 = ggplot(trends2019$s.o.data,aes(x = data.second.order.digits, fill = data.second.order.digits)) +
+  geom_bar(position = "identity", fill = "#ade8f4") +
+  theme_minimal() + xlab("Second Order First Digit")+ geom_line(aes(x = data.second.order.digits, y = bl*3),inherit.aes = FALSE, size = 1, color="black", alpha = 0.5, group = 1) +
+  scale_y_continuous(sec.axis = sec_axis(~. /3))
+
+
+
+a <- list(
+  text = "2020 First Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+b <- list(
+  text = "2020 Second Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+c <- list(
+  text = "2019 First Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+
+d <- list(
+  text = "2019 Second Order Benfords Law",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "center",
+  align = "center",
+  x = 0.5,
+  y = 1,
+  showarrow = FALSE
+)
+ay <- list(
+  overlaying = "y",
+  side = "right",
+  title = "Ideal Benfords Law"
+)
+
+
+subplot(ggplotly(gg1)%>%layout(annotations = a),
+        ggplotly(gg2)%>%layout(annotations = b),
+        ggplotly(gg3)%>%layout(annotations = c),
+        ggplotly(gg4)%>%layout(annotations = d),
+        nrows = 2,shareY = TRUE)%>% layout(showlegend = F, yaxis = list(anchor = 'x1'),
+            yaxis2 = list(showticklabels = T), yaxis4 = list(showticklabels = F),
+            xaxis = list(showticklabels = F), xaxis2 = list(showticklabels = F)) %>%
+    add_annotations(
+        text = "First Digit in Hourly Load",
+        x = 0.5,
+        y = 0,
+        yref = "paper",
+        xref = "paper",
+        xanchor = "center",
+        yanchor = "bottom",
+        yshift = -35,
+        showarrow = FALSE,
+        font = list(size = 15)
+    )
+# %>% layout(title= "Benfords Law")
+
+# ggplotly(gg)
+
+
+
+# ggplotly(plot(trends))
+
+# trends2020$data = trends2020$data %>% mutate(bl=recode(data.digits, 
+#                          `1`=30.1,`2`= 17.6,`3`= 12.5,`4`= 9.7,`5`= 7.9,`6`= 6.7,`7`= 5.8,`8`= 5.1,`9`= 4.6,))
+# 
+# # euro2020 = eurohourwide %>% filter(year == 2020) %>% select(load)
+# gg1 + geom_line(aes(x = data.digits, y = bl*3),inherit.aes = FALSE, size = 1.5, color="black", alpha = 0.5, group = 1) + 
+#   scale_y_continuous(sec.axis = sec_axis(~. /3))
 
 ```
