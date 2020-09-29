@@ -8,6 +8,8 @@ navbar:
       href: Insights.html
     - text: "Data2App"
       href: Data2App.html
+    - text: "Extras"
+      href: Extras.html
     - text: "References"
       href: Links.html
 output_dir: "docs"
