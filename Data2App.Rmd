@@ -19,6 +19,8 @@ library(plotly)
 library(scales)
 library(forecast)
 library(rvest)
+library(gtrendsR)
+
 ```
 
 
@@ -34,7 +36,7 @@ rrp = aggregate(RRP~SETTLEMENTDATE,data=tail,sum)
 
 
 time = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
-time$mday = time$mday - 1 
+time$mday = time$mday - 7 
 
 ay2 <- list(
   tickfont = list(color = "lightgreen"),
@@ -55,11 +57,10 @@ x1 = plot_ly() %>%
              mode = 'lines', name = 'DEMAND', line = list( color = 'blue') ) %>% 
   add_trace( data = rrp[c(-1,-length(rrp$SETTLEMENTDATE)),], x = ~SETTLEMENTDATE, y = ~RRP, type = 'scatter',
              mode = 'lines',  name = 'PRICE $', yaxis = "y2", line = list( color = 'lightgreen')) %>% layout(
-    title = "CURRENT DEMAND & RRP", yaxis2 = ay2, yaxis = ay1,
+    title = "ELECTRICITY DEMAND & RRP ($)", yaxis2 = ay2, yaxis = ay1,
     xaxis = list(title="Date")) %>%
     layout(xaxis = list(
-        range = 
-            c(as.numeric(as.POSIXct(gsub(" AEST", "", time), format="%Y-%m-%d"))*1000,
+        range =  c(as.numeric(as.POSIXct(gsub(" AEST", "", time), format="%Y-%m-%d"))*1000,
               as.numeric(as.POSIXct(format(Sys.time(), "%Y-%m-%d"), format="%Y-%m-%d"))*1000),
         type = "date"))
 
@@ -77,13 +78,14 @@ webpage <- read_html("http://www.bom.gov.au/places/vic/melbourne/observations/me
 
 tbls_ls <- webpage %>%
         html_nodes("table") %>%
-        .[3:4] %>%
+        .[3:6] %>%
         html_table(fill = TRUE)
 
 
 weather1 = tbls_ls[[1]]
-
 weather2 = tbls_ls[[2]]
+weather3 = tbls_ls[[3]]
+weather4 = tbls_ls[[4]]
 ```
 
 
@@ -101,13 +103,31 @@ weather2[cols] <- lapply(weather2[cols], factor)
 cols <- c("Humidity(%)")
 weather2[cols] <- lapply(weather2[cols], as.numeric)
 
+cols <- c("Wind Direction")
+weather3[cols] <- lapply(weather3[cols], factor)
+cols <- c("Humidity(%)")
+weather3[cols] <- lapply(weather3[cols], as.numeric)
+
+cols <- c("Wind Direction")
+weather4[cols] <- lapply(weather4[cols], factor)
+cols <- c("Humidity(%)")
+weather4[cols] <- lapply(weather4[cols], as.numeric)
+
 time = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
 time$mday = time$mday - 1 
+time2 = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
+time2$mday = time2$mday - 2 
+time3 = format(Sys.time(), "%Y-%m-%d") %>% as.POSIXlt() 
+time3$mday = time3$mday - 3 
 
+weather4$`Time (AEST)` =  lapply(weather4, function(x) paste(gsub(" AEST", "", time3),x))$`Time (AEST)`
+weather4$`Time (AEST)` = as.POSIXct(weather4$`Time (AEST)`, format="%Y-%m-%d %I:%M %p")
+weather3$`Time (AEST)` =  lapply(weather3, function(x) paste(gsub(" AEST", "", time2),x))$`Time (AEST)`
+weather3$`Time (AEST)` = as.POSIXct(weather3$`Time (AEST)`, format="%Y-%m-%d %I:%M %p")
 weather2$`Time (AEST)` =  lapply(weather2, function(x) paste(gsub(" AEST", "", time),x))$`Time (AEST)`
 weather2$`Time (AEST)` = as.POSIXct(weather2$`Time (AEST)`, format="%Y-%m-%d %I:%M %p")
 weather1$`Time (AEST)` = as.POSIXct(weather1$`Time (AEST)`, format="%I:%M %p")
-weather = rbind(weather1,weather2)
+weather = rbind(weather1,weather2,weather3,weather4)
 
 x2 = plot_ly() %>%
   add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Temp (°C)`, type = 'scatter',
@@ -118,42 +138,36 @@ x2 = plot_ly() %>%
              mode = 'lines', name = 'Humidity(%)', line = list( color = '#0077b6') )%>%
   add_trace( data = weather, x = ~`Time (AEST)`, y = ~`Rainfall since 9 am (mm)`, type = 'scatter',
              mode = 'lines', name = 'Rainfall since 9 am (mm)', line = list( color = '#0096c7') )%>% 
-  layout( yaxis = list(type = "log",title="Units in Legend"), xaxis = list(title=" "), title = "CURRENT WEATHER", dragmode='pan')
+  layout( yaxis = list(type = "log",title="Units in Legend"), xaxis = list(title=" "), title = "WEATHER", dragmode='pan')
+
 
 ```
+
+
 
 
 ```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
-webpage <- read.csv(url("https://trends.google.com/trends/api/widgetdata/multiline/csv?req=%7B%22time%22%3A%222020-09-28T15%5C%5C%3A36%5C%5C%3A29%202020-09-29T15%5C%5C%3A36%5C%5C%3A29%22%2C%22resolution%22%3A%22EIGHT_MINUTE%22%2C%22locale%22%3A%22en-GB%22%2C%22comparisonItem%22%3A%5B%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22the%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22to%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22of%22%7D%5D%7D%7D%2C%7B%22geo%22%3A%7B%22region%22%3A%22AU-VIC%22%7D%2C%22complexKeywordsRestriction%22%3A%7B%22keyword%22%3A%5B%7B%22type%22%3A%22BROAD%22%2C%22value%22%3A%22and%22%7D%5D%7D%7D%5D%2C%22requestOptions%22%3A%7B%22property%22%3A%22%22%2C%22backend%22%3A%22CM%22%2C%22category%22%3A0%7D%7D&token=APP6_UEAAAAAX3Sl_fXekhRxTtX2IWXt6DxoFbhXOluf&tz=-600"), header = T, skip = 2)
+internet = gtrends(c("the", "to", "of", "and"), time = "now 7-d", geo="AU-VIC")$interest_over_time
+internet = internet %>% spread(keyword, hits)
+internet$mean = rowMeans(internet[6:8],na.rm=T)
 
-colnames(webpage) <- c("Time" ,"theVictoria.", "toVictoria." , "ofVictoria." , "andVictoria.")
-cols <- c( "theVictoria.", "toVictoria." , "ofVictoria." , "andVictoria.")
-webpage[cols] <- lapply(webpage[cols], as.numeric)
-webpage$mean = rowMeans(webpage[2:5], na.rm=F)
-webpage$Time = gsub("T"," ",webpage$Time)
-webpage$Time = strftime(webpage$Time, "%Y-%m-%d %H:%M:00")
-webpage$Time = webpage$Time %>% as.POSIXct(format="%Y-%m-%d %H:%M:00")
-webpage = webpage[order(webpage$Time),]
+mobility = gtrends(c("maps", "near me", "google maps"), time = "now 7-d", geo="AU-VIC")$interest_over_time
+mobility = mobility %>% spread(keyword, hits)
+mobility$mean = rowMeans(mobility[6:8],na.rm=T)
 
 x3 = plot_ly() %>% 
-  add_trace( data = webpage , x = ~Time, y = ~mean, type = 'scatter',
-             mode = 'lines', name = 'Internet Search Traffic', line = list( color = '#03045e') )%>% 
-  layout( yaxis = list(title="Mean Google Search Volume of: the, to, of & and"), xaxis = list(title=" "), title = "CURRENT ESTIMATED \nINTERNET TRAFFIC", dragmode='pan')
+  add_trace( data = internet , x = ~date, y = ~mean, type = 'scatter',
+             mode = 'lines', name = 'Estimated Internet Traffic using keywords: the, to, of & and ', line = list( color = '#03045e') )%>% 
+  add_trace( data = mobility , x = ~date, y = ~mean, type = 'scatter',
+             mode = 'lines', name = 'Estimated Mobility Traffic using keywords: maps, near me & google maps ', line = list( color = '#0077b6') ) %>%
+  layout( yaxis = list(title="Mean Google Search Volume"), xaxis = list(title=" "), title = "SEARCH VOLUME", dragmode='pan')
 
 ```
 
 
 
-
-
-*note to self* : 
-* use/learn css to format around the subplot discrepancies in plotly 
-* rewrite the time function that syncs x axis
-* make the rvest urls dynamic using sys.time(), strtime and gsub
-
-
-<center><h2>Dashboarding variables of the production function - Data localised to Victoria, Australia</h2></center>
+<center><h2>Live data localised to Victoria, Australia</h2></center>
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 x1
@@ -176,8 +190,11 @@ x1
 <div class="col-sm-6">
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
-x3
+x3 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 ```
+
+
+
 
 </div>
 <div class="col-sm-6">
@@ -192,6 +209,13 @@ x2 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 </div>
 
 
+*note to self* : 
+
+* use/learn css to format around the subplot discrepancies in plotly 
+
+* rewrite the time function that syncs x axis
+
+* make the rvest urls dynamic using sys.time(), strtime and gsub
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam bibendum, mi a elementum ullamcorper, tortor arcu rutrum leo, ultricies eleifend massa metus elementum elit. Proin bibendum scelerisque nulla, vitae malesuada tellus lacinia in. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Phasellus vitae placerat quam, a eleifend libero. Nullam iaculis imperdiet risus, at faucibus felis eleifend nec. Quisque feugiat scelerisque ex, vitae vulputate purus accumsan eget. Ut mauris ex, volutpat nec venenatis vel, pretium non lorem. Sed at turpis id sapien lacinia mattis. Etiam dictum massa at congue convallis.
 
