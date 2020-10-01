@@ -25,12 +25,18 @@ library(gtrendsR)
 
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-url = "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_202009_VIC1.csv"
 
-data = read.csv(url)
-tail = data %>% tail(800)
-tail$SETTLEMENTDATE = as.POSIXct(tail$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
-tail$SETTLEMENTDATE   = strftime(tail$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+url1 = gsub("z", format(Sys.time(), "%m"), "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_2020z_VIC1.csv")
+url2 = format(Sys.time(), "%m") %>% as.numeric() - 1 
+url2 = gsub("z", paste0(0,url2)  , "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_2020z_VIC1.csv")
+url1 = read.csv(url1)
+url2 = read.csv(url2)
+data = rbind(url1,url2)
+
+data$SETTLEMENTDATE = as.POSIXct(data$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+data$SETTLEMENTDATE   = strftime(data$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+tail = data[order(data$SETTLEMENTDATE),] %>% tail(800) 
+
 demand = aggregate(TOTALDEMAND~SETTLEMENTDATE,data=tail,sum)
 rrp = aggregate(RRP~SETTLEMENTDATE,data=tail,sum)
 
@@ -150,11 +156,15 @@ x2 = plot_ly() %>%
 
 internet = gtrends(c("the", "to", "of", "and"), time = "now 7-d", geo="AU-VIC")$interest_over_time
 internet = internet %>% spread(keyword, hits)
-internet$mean = rowMeans(internet[6:8],na.rm=T)
+internet$mean = rowMeans(internet[6:9],na.rm=T)
 
 mobility = gtrends(c("maps", "near me", "google maps"), time = "now 7-d", geo="AU-VIC")$interest_over_time
 mobility = mobility %>% spread(keyword, hits)
 mobility$mean = rowMeans(mobility[6:8],na.rm=T)
+
+df= cbind(date=internet$date,internet[6:9],mobility[6:8])
+
+df$mean =  rowMeans(df[2:8],na.rm = T)
 
 x3 = plot_ly() %>% 
   add_trace( data = internet , x = ~date, y = ~mean, type = 'scatter',
@@ -170,7 +180,7 @@ x3 = plot_ly() %>%
 <center><h2>Live data localised to Victoria, Australia</h2></center>
 
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-x1
+x1 
 ```
 
 
@@ -192,8 +202,6 @@ x1
 ```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
 x3 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 ```
-
-
 
 
 </div>
