@@ -19,3 +19,6 @@ iterators
 itertools
 Rtsne
 benford.analysis
+plyr
+crosstalk
+d3scatter

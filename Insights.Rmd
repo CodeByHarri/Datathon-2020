@@ -341,6 +341,63 @@ p
 
 
 
+<center><h4>Random Sample 5000 From 2018-2020 Victoria, Australia To Observe Seasonality In Demand & Price</h4></center>
+
+
+```{r p4, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+
+aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+temp = list.files("ausdata/VIC/",pattern="*.csv")
+for (i in 1:length(temp)){
+  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+  aus = rbind(aus, ausx)
+}
+aus = aus[c(-1,-5)]
+aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d %H:%M:%S")
+aus$hour = unclass(as.POSIXlt(aus$SETTLEMENTDATE))$hour
+aus$mday = unclass(as.POSIXlt(aus$SETTLEMENTDATE))$mday
+aus$wday = unclass(as.POSIXlt(aus$SETTLEMENTDATE))$wday
+aus$yday = unclass(as.POSIXlt(aus$SETTLEMENTDATE))$yday
+aus$mon = unclass(as.POSIXlt(aus$SETTLEMENTDATE))$mon
+
+x= unclass(as.POSIXlt(aus$SETTLEMENTDATE))
+
+aus = sample_n(aus, 5000)
+require(plyr)
+aus$mon <- mapvalues(aus$mon, 
+          from=c(0,1,2,3,4,5,6,7,8,9,10,11), 
+          to=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
+
+aus$wday <- mapvalues(aus$wday, 
+          from=c(0,1,2,3,4,5,6), 
+          to=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+
+library(crosstalk)
+
+
+
+
+shared_df <- SharedData$new(aus)
+bscols(widths = c(3,NA),
+  list(
+    filter_select("mon", "Month", shared_df, ~mon),
+        # filter_checkbox("wday", "Day", shared_df, ~wday, inline = TRUE),
+    filter_select("wday", "Day", shared_df, ~wday),
+    filter_slider("hour", "Hour", shared_df, ~hour, width = "100%")
+  ),
+
+  plot_ly() %>% 
+  add_trace( data = shared_df , x = ~RRP, y = ~TOTALDEMAND, type = 'scatter', color = ~factor(wday), colors=  c("#cb997e", "#689D56", "#F0C902", "#CD5300", "#4959E7", "#A60900"), alpha =0.5,
+             mode = 'markers' )%>% 
+  layout( xaxis = list(type = "log"), legend = list(orientation = 'h'),dragmode='pan')
+)
+
+
+```
+
+
+
 
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 

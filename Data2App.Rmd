@@ -180,25 +180,18 @@ x3 = plot_ly() %>%
 
 
 ```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
-# 
+
 # internet$internet = internet$mean
 # df = left_join(weather, internet, by = c("Time (AEST)" = "date"))
-# mobility$mobility = mobility$mean 
+# mobility$mobility = mobility$mean
 # df = left_join(df, mobility, by = c("Time (AEST)" = "date"))
 # df = left_join(df, demand, by = c("Time (AEST)" = "SETTLEMENTDATE"))
 # df = df[c("Time (AEST)", "Temp (°C)","Feels Like (°C)","Humidity(%)","Rainfall since 9 am (mm)","internet","mobility","TOTALDEMAND")]
-# df = na.omit(df) 
+# df = na.omit(df)
 # 
 # df$hour = unclass(as.POSIXlt(df$`Time (AEST)`))$hour
 # df$mday = unclass(as.POSIXlt(df$`Time (AEST)`))$mday
-# # df$mon = unclass(as.POSIXlt(df$`Time (AEST)`))$mon
-# 
-# # df = df[-1]
-# 
 # df
-# 
-
-
 
 ```
 
@@ -241,6 +234,9 @@ x2 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 ```
 
 </div>
+
+
+
 
 
 *note to self* : 
