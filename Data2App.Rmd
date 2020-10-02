@@ -19,12 +19,13 @@ library(plotly)
 library(scales)
 library(forecast)
 library(rvest)
+# library(XML)
 library(gtrendsR)
 
 ```
 
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r aemo, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 url1 = gsub("z", format(Sys.time(), "%m"), "https://aemo.com.au/aemo/data/nem/priceanddemand/PRICE_AND_DEMAND_2020z_VIC1.csv")
 url2 = format(Sys.time(), "%m") %>% as.numeric() - 1 
@@ -78,7 +79,7 @@ x1 = x1  %>% layout(showlegend = FALSE, dragmode='pan') %>% layout(xaxis = list(
 
 
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r bom, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 webpage <- read_html("http://www.bom.gov.au/places/vic/melbourne/observations/melbourne-(olympic-park)/")
 
@@ -96,7 +97,7 @@ weather4 = tbls_ls[[4]]
 
 
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r bom2, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 
 cols <- c("Wind Direction")
@@ -152,7 +153,7 @@ x2 = plot_ly() %>%
 
 
 
-```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r gtrends, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 internet = gtrends(c("the", "to", "of", "and"), time = "now 7-d", geo="AU-VIC")$interest_over_time
 internet = internet %>% spread(keyword, hits)
@@ -177,9 +178,34 @@ x3 = plot_ly() %>%
 
 
 
-<center><h2>Live data localised to Victoria, Australia</h2></center>
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+```{r, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
+# 
+# internet$internet = internet$mean
+# df = left_join(weather, internet, by = c("Time (AEST)" = "date"))
+# mobility$mobility = mobility$mean 
+# df = left_join(df, mobility, by = c("Time (AEST)" = "date"))
+# df = left_join(df, demand, by = c("Time (AEST)" = "SETTLEMENTDATE"))
+# df = df[c("Time (AEST)", "Temp (°C)","Feels Like (°C)","Humidity(%)","Rainfall since 9 am (mm)","internet","mobility","TOTALDEMAND")]
+# df = na.omit(df) 
+# 
+# df$hour = unclass(as.POSIXlt(df$`Time (AEST)`))$hour
+# df$mday = unclass(as.POSIXlt(df$`Time (AEST)`))$mday
+# # df$mon = unclass(as.POSIXlt(df$`Time (AEST)`))$mon
+# 
+# # df = df[-1]
+# 
+# df
+# 
+
+
+
+```
+
+
+<center><h2>Live Data Localised to Victoria, Australia</h2></center>
+
+```{r p1, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 x1 
 ```
 
@@ -199,7 +225,7 @@ x1
 <div class="row" style="padding-top: 30px;">
 <div class="col-sm-6">
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
+```{r p2, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
 x3 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 ```
 
@@ -207,7 +233,7 @@ x3 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 </div>
 <div class="col-sm-6">
 
-```{r , echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
+```{r p3, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=4.5, results='show'}
 
 x2 %>% layout(legend = list(orientation = 'h'),dragmode='pan')
 # subplot(x1, x2, nrows=2,shareX = TRUE)%>% layout(legend = list(orientation = 'h'),dragmode='pan')
