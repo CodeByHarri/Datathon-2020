@@ -334,15 +334,26 @@ p
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 
-<center> <h2>**Production Function**: An experimental approach to model electricity production</h2> </center>
+<center> <h2>**Production Function**: An experimental approach to detect anomalous behaviour in electricity production</h2> </center>
 
+In this section I explore which features may be attributable to electricity production. There are too many variables to explore in detail on this page, however, I've plotted below the electricity demand vs price with time filters to explore seasonality in the data. Other plots such as weather, mobility & economic activity can be found on the data2app page also localised to Victoria, Australia. I've used live google search volume for certain keywords as a proxy for mobility & economic activity. The weather is read in live from the Bureau of Meteorology. In this exploration, I aim to only use only live data sources so when encorporated within a business model actionable insights can be obtained immediately.   
 
-\[energyProduction = f(weatherForecast,weekOfYear, dayOfWeek, hourOfDay, holidays)\]
+\[x_1 = weatherForecast\]
+\[x_2 = weekOfYear \]
+\[x_3 = dayOfWeek \]
+\[x_4 = hourOfDay \]
+\[x_5 = holidays \]
+\[x_6 = geo-location \]
+\[x_7 = mobility \]
+\[x_8 = economic Activity\]
+\[x_9 = solar Panel Purchases\]
+ 
+\[energyProduction = f(x_1, ... , x_n)\]
 
+Tampering with some of the variables above, I aim to detect anomalous behaviours as they occur. Sample experiments are displayed in the extras page, including a simple SARIMAX forecast, t-SNE plot & benfords law. My current explorations are in change point analysis.   
 
 
 <center><h4>Random Sample 5000 From 2018-2020 Victoria, Australia To Observe Seasonality In Demand & Price</h4></center>
-
 
 ```{r p4, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 

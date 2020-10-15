@@ -199,12 +199,12 @@ library(benford.analysis)
 
 # country = c('Australia', 'Austria', 'Belgium', 'Switzerland', 'Germany', 'Denmark', 'Spain', 'France', 'UK', 'Ireland', 'Italy', 'Luxembourg', 'Netherlands', 'Norway', 'Portugal','Sweden','US')
 
-# MAKE SARIMA DATA 
+# MAKE SARIMA DATA
 
 # for (country_string in country){print(country_string)
 #   # country_string = "US"
 # data = worlddata
-# data = data %>% filter(country == country_string) 
+# data = data %>% filter(country == country_string)
 # data[c("end","load")]
 # data
 # t20152018 = data[(data$end >= "2015-01-01" & data$end <= "2018-12-31"),]
@@ -245,7 +245,7 @@ library(benford.analysis)
 # 
 # saveRDS(fcBESTFIT2019, file = paste0(country_string,"2019",".rds"))
 # fcBESTFIT3 = readRDS(file = "ausdata/bf3.rds")
-# Create a daily Date object - helps my work on dates
+# # Create a daily Date object - helps my work on dates
 # inds <- seq(as.Date("2016-01-01"), as.Date("2019-12-31"), by = "day")
 # 
 # ## Create a time series object
