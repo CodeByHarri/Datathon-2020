@@ -343,7 +343,7 @@ In this section I explore which features may be attributable to electricity prod
 \[x_3 = dayOfWeek \]
 \[x_4 = hourOfDay \]
 \[x_5 = holidays \]
-\[x_6 = geo-location \]
+\[x_6 = location \]
 \[x_7 = mobility \]
 \[x_8 = economic Activity\]
 \[x_9 = solar Panel Purchases\]
