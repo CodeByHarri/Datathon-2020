@@ -21,7 +21,7 @@ editor_options:
 
 2. **Demand & Economics**: *Duck curve & the economy - an analysis into electricity consumption*
 
-3. **Production Function**: *An experimental approach to model electricity production*
+3. **Production Function**: *An experimental approach to detect patterns in electricity demand*
 
 
 <center> <h2> **Policy Impact**: Exploring the seasonally adjusted difference between 2020 & 2019 electricity consumption</h2> </center>
@@ -39,6 +39,8 @@ library(itertools)
 library(scales)
 library(forecast)
 library(Rtsne)
+library(RColorBrewer)
+library(zoo)
 ```
 
 
@@ -334,24 +336,110 @@ p
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/YYLzss58CLs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
 
 
-<center> <h2>**Production Function**: An experimental approach to detect anomalous behaviour in electricity production</h2> </center>
+<center> <h2>**Production Function**: An experimental approach to detect patterns in electricity demand</h2> </center>
 
-In this section I explore which features may be attributable to electricity production. There are too many variables to explore in detail on this page, however, I've plotted below the electricity demand vs price with time filters to explore seasonality in the data. Other plots such as weather, mobility & economic activity can be found on the data2app page also localised to Victoria, Australia. I've used live google search volume for certain keywords as a proxy for mobility & economic activity. The weather is read in live from the Bureau of Meteorology. In this exploration, I aim to only use only live data sources so when encorporated within a business model actionable insights can be obtained immediately.   
+Firstly, let's look at how COVID-19 has impacted Victoria's electricity demand by plotting the moving average of active cases vs electricity demand along side significant policies put in place. I **hypothesize** that most energy consumption can be attributed to weather through heating & cooling, hence there may not be a significant impact as people will use electricity from home during lockdown rather than at thier work place. Secondly, that a small proportion of businesess make up the majority demand of electricity and hence there should be no discernible effects unless the small proportion of businesess closed down.*
 
-\[x_1 = weatherForecast\]
-\[x_2 = weekOfYear \]
-\[x_3 = dayOfWeek \]
-\[x_4 = hourOfDay \]
-\[x_5 = holidays \]
-\[x_6 = location \]
-\[x_7 = mobility \]
-\[x_8 = economic Activity\]
-\[x_9 = solar Panel Purchases\]
- 
-\[energyProduction = f(x_1, ... , x_n)\]
+<!-- https://www.dhhs.vic.gov.au/victorian-coronavirus-covid-19-data -->
 
-Tampering with some of the variables above, I aim to detect anomalous behaviours as they occur. Sample experiments are displayed in the extras page, including a simple SARIMAX forecast, t-SNE plot & benfords law. My current explorations are in change point analysis.   
+<center><h4>Weekly Moving Average of Active COVID-19 Cases vs Demand of Electricity Over Time</h4></center>
+```{r p45, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
+covid = read.csv("ActiveGSG_Full_Data_data.csv")
+covid$Date = as.POSIXct(covid$ï..Day.of.Date, format="%B %d, %Y")
+covid = covid[2:3]
+
+
+aus = read.csv("ausdata/VIC/PRICE_AND_DEMAND_201801_VIC1.csv", header =TRUE, stringsAsFactors = FALSE)
+aus$SETTLEMENTDATE = as.POSIXct(aus$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+aus$SETTLEMENTDATE   = strftime(aus$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d")
+aus = aggregate(aus["TOTALDEMAND"], by=aus["SETTLEMENTDATE"], sum)
+aus = aus %>% filter(TOTALDEMAND > 10000)
+temp = list.files("ausdata/VIC/",pattern="*.csv")
+for (i in 1:length(temp)){
+  ausx = read.csv(paste0("ausdata/VIC/",temp[i]), header = TRUE, stringsAsFactors = FALSE)
+  ausx$SETTLEMENTDATE = as.POSIXct(ausx$SETTLEMENTDATE, format="%Y/%m/%d %H:%M:%S")
+  ausx$SETTLEMENTDATE   = strftime(ausx$SETTLEMENTDATE, "%Y:%m:%d %H:00:00") %>% as.character() %>% as.POSIXct(format="%Y:%m:%d")
+  ausx = aggregate(ausx["TOTALDEMAND"], by=ausx["SETTLEMENTDATE"], sum)
+  ausx = ausx %>% filter(TOTALDEMAND > 10000)
+  aus = rbind(aus, ausx)
+}
+aus =  aus[(aus$SETTLEMENTDATE >= min(covid$Date) & aus$SETTLEMENTDATE <= max(covid$Date)),]
+colnames(aus) = c("Date", "DEMAND")
+
+
+
+data = merge(covid, aus,by = "Date",all = TRUE)
+
+myfun = function(x){ rollmean(x, k = 7, fill = NA, align = "right")}
+data = data %>% mutate_each(funs(myfun), Active, DEMAND)
+
+
+m1 <- data[data$Date =="2020-03-16", ]
+a <- list(
+  x = log10(m1$Active),
+  y = m1$DEMAND,
+  text = "<b>March 16th</b>\nA state of emergency \nwas declared",
+  xref = "x",
+  yref = "y",
+  showarrow = TRUE,
+  arrowhead = 7,
+  ax = -20,
+  ay = -40
+)
+
+m2 <- data[data$Date =="2020-06-20", ]
+b <- list(
+  x = log10(m2$Active),
+  y = m2$DEMAND,
+  text = "<b>June 20th</b>\nVictorian Government re-tightened \nrestrictions on household gatherings",
+  xref = "x",
+  yref = "y",
+  showarrow = TRUE,
+  arrowhead = 7,
+  ax = 100,
+  ay = -40
+)
+
+m3 <- data[data$Date =="2020-07-9", ]
+c <- list(
+  x = log10(m3$Active),
+  y = m3$DEMAND,
+  text = "<b>July 9th</b>\nMetropolitan Melbourne and the \nShire of Mitchell would \nre-enter lockdown",
+  xref = "x",
+  yref = "y",
+  showarrow = TRUE,
+  arrowhead = 7,
+  ax = -10,
+  ay = -40
+)
+
+m4 <- data[data$Date =="2020-08-2", ]
+d <- list(
+  x = log10(m4$Active),
+  y = m4$DEMAND,
+  text = "<b>August 2nd</b>\nA state of disaster \nis declared",
+  xref = "x",
+  yref = "y",
+  showarrow = TRUE,
+  arrowhead = 7,
+  ax = -20,
+  ay = 40
+)
+
+p = plot_ly(data = data ,x = ~Active, y = ~DEMAND, 
+        mode = 'marker+lines', marker = list(color = colorRampPalette(brewer.pal(10,"Spectral"))(length(data$Date))),
+        line = list(color = '#000000',alpha = 0.5 ),
+        text = ~paste(Date,'</br></br>','TOTAL DEMAND (MW):', DEMAND,'</br>',
+                              '7 DMA COVID-19 CASES: ',Active)) %>% 
+  layout( xaxis = list(type = "log",title="Weekly Moving Average of Active COVID-19 Cases"),
+          yaxis = list(title="Weekly Moving Average of Electrcity Demand (MW)")) %>% layout(annotations = a)
+p = p %>% layout(annotations = b )   %>% layout(annotations = c)  %>% layout(annotations = d)
+
+p
+```
+
+The figure above shows the timeseries (rainbow gradient) within a scatter plot of active covid cases versus electricity demand. It is not evident that any of the 4 major policy impacts resulted in a higher or lower electricity consumption. The changes in demand are more so attributed to seasonality. Next, we'll explore which features may be attributable to electricity production. There are too many variables to explore in detail on this page, however, I've plotted below the electricity demand vs price with time filters to explore seasonality in the data.  
 
 <center><h4>Random Sample 5000 From 2018-2020 Victoria, Australia To Observe Seasonality In Demand & Price</h4></center>
 
@@ -407,7 +495,15 @@ bscols(widths = c(3,NA),
 
 ```
 
+Other plots such as weather, mobility & economic activity can be found on the data2app page also localised to Victoria, Australia. I've used live google search volume for certain keywords as a proxy for mobility & economic activity. The weather is read in live from the Bureau of Meteorology. In this exploration, I aim to only use only live data sources so when encorporated within a business model actionable insights can be obtained immediately.   
 
+\[x_1 = weatherForecast, x_2 = weekOfYear, x_3 = dayOfWeek \]
+\[x_4 = hourOfDay, x_5 = holidays, x_6 = location \]
+\[x_7 = mobility, x_8 = economic Activity,x_9 = solar Panel Purchases\]
+ 
+\[energyProduction = f(x_1, ... , x_n)\]
+
+Tampering with some of the variables above, I aim to detect anomalous behaviours as they occur. Sample experiments are displayed in the extras page, including a simple SARIMAX forecast, t-SNE plot & benfords law. My current explorations are in change point analysis. 
 
 
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->

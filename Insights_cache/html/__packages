@@ -19,5 +19,7 @@ iterators
 itertools
 Rtsne
 benford.analysis
+RColorBrewer
+zoo
 plyr
 crosstalk
