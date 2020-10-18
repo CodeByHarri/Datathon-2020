@@ -5,28 +5,22 @@ output:
     theme: flatly
 ---
 
-
-# KNOWLEDGE
-
-1. Hyndman, R. J., & Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. Journal of Statistical Software, 27(1), 1–22. https://doi.org/10.18637/jss.v027.i03
-
-
 # DATA SOURCES
 
 1. ENTSO-E Transparency Platform (2020). Western Europe Consumption Data. [ENTSO-E Transparency](https://transparency.entsoe.eu/)
 [Kaggle Data Source](https://www.kaggle.com/francoisraucent/western-europe-power-consumption?select=it.csv)
 
 2. AEMO 2020. Aggregated price and demand data. [AEMO Australian Data](https://aemo.com.au/energy-systems/electricity/national-electricity-market-nem/data-nem/aggregated-data)
-*The AEMO data above only has data for VIC, NSW, SA, QLD & TAS, hence my Australian data is only a summation of these states* 
+*The AEMO data above only has data for VIC, NSW, SA, QLD & TAS, hence my Australian data is only a summation of these states in the first plot of insights* 
 
 3. U.S. Energy Information Administration - Hourly Electric Grid Mointor [US DATA](https://www.eia.gov/beta/electricity/gridmonitor/dashboard/electric_overview/US48/US48)
 *This data may not capture the whole of the US. See the link above for more details on the biases*
 
-
-
-
-# used for now. 
 4. IEA (2020), Monthly electricity statistics, IEA,  [IEA](https://www.iea.org/reports/monthly-electricity-statistics)
 
 5. Bureau of Meteorology (2020), Australian climate variability & change - Time series data
 [BoM](http://www.bom.gov.au/climate/change/index.shtml#tabs=Tracker&tracker=timeseries&tQ=graph%3Drain%26area%3Daus%26season%3Dallmonths%26ave_yr%3DT)
+
+# KNOWLEDGE
+
+1. Hyndman, R. J., & Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. Journal of Statistical Software, 27(1), 1–22. https://doi.org/10.18637/jss.v027.i03

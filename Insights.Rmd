@@ -88,7 +88,7 @@ p
 
 ```
 
-Intervention analysis aims to accommodate for exigenous forces such as a pandemic with-in it's modelling in time-series analysis with several methods avaliable for trial, such as R packages 'changepoint' and 'mcp'. However, A forecast will a more useful tool in a practical application of electricity consumption. Hence, I've chosen to forecast 2020 and 2019 to compare how predictable electricity consumption is as a micro-study. 
+*Note: See the references page for data sources & data representation of Australia & US* 
 
 
 
@@ -237,15 +237,6 @@ The solution is as battery technology evolves, we're able to store energy more e
 
 
 
-
-
-
-
-
-
-
-
-
 ```{r, echo=FALSE, cache=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 
@@ -338,11 +329,11 @@ p
 
 <center> <h2>**Production Function**: An experimental approach to detect patterns in electricity demand</h2> </center>
 
-Firstly, let's look at how COVID-19 has impacted Victoria's electricity demand by plotting the moving average of active cases vs electricity demand along side significant policies put in place. I **hypothesize** that most energy consumption can be attributed to weather through heating & cooling, hence there may not be a significant impact as people will use electricity from home during lockdown rather than at thier work place. Secondly, that a small proportion of businesess make up the majority demand of electricity and hence there should be no discernible effects unless the small proportion of businesess closed down.*
+Firstly, let's look at how COVID-19 has impacted Victoria's electricity demand by plotting the moving average of active cases vs electricity demand along side significant policies put in place. I **hypothesize** that most energy consumption can be attributed to weather through heating & cooling, hence there may not be a significant impact as people will use electricity from home during lockdown rather than at their work place. Secondly, large businesess make up the majority demand of electricity and hence there should be no discernible effects unless the these large businesess closed down. An exploration into residential & commerical electricity demand by [Energy Networks Australia](https://www.energynetworks.com.au/news/energy-insider/2020-energy-insider/commercial-down-v-residential-up-covid-19s-electricity-impact/) showed up to a 15% increase in residential use during mid-day compared to the same time in 2019. Up to a 19% decrease in consumption by small-medium enterprise businesses and 8% decrease in large businesses. 
 
 <!-- https://www.dhhs.vic.gov.au/victorian-coronavirus-covid-19-data -->
 
-<center><h4>Weekly Moving Average of Active COVID-19 Cases vs Demand of Electricity Over Time</h4></center>
+<center><h4>7 Day Moving Average of Active COVID-19 Cases vs Demand of Electricity Over Time</h4></center>
 ```{r p45, echo=FALSE, fig.align='left', fig.height=4.5, fig.width=9, results='show'}
 
 covid = read.csv("ActiveGSG_Full_Data_data.csv")
@@ -432,12 +423,13 @@ p = plot_ly(data = data ,x = ~Active, y = ~DEMAND,
         line = list(color = '#000000',alpha = 0.5 ),
         text = ~paste(Date,'</br></br>','TOTAL DEMAND (MW):', DEMAND,'</br>',
                               '7 DMA COVID-19 CASES: ',Active)) %>% 
-  layout( xaxis = list(type = "log",title="Weekly Moving Average of Active COVID-19 Cases"),
-          yaxis = list(title="Weekly Moving Average of Electrcity Demand (MW)")) %>% layout(annotations = a)
+  layout( xaxis = list(type = "log",title="7 Day Moving Average of Active COVID-19 Cases"),
+          yaxis = list(title="7 Day Moving Average of Electrcity Demand (MW)")) %>% layout(annotations = a)
 p = p %>% layout(annotations = b )   %>% layout(annotations = c)  %>% layout(annotations = d)
 
 p
 ```
+*Note: The change in colour is to help visualise time increasing*
 
 The figure above shows the timeseries (rainbow gradient) within a scatter plot of active covid cases versus electricity demand. It is not evident that any of the 4 major policy impacts resulted in a higher or lower electricity consumption. The changes in demand are more so attributed to seasonality. Next, we'll explore which features may be attributable to electricity production. There are too many variables to explore in detail on this page, however, I've plotted below the electricity demand vs price with time filters to explore seasonality in the data.  
 
@@ -494,6 +486,9 @@ bscols(widths = c(3,NA),
 
 
 ```
+An experimental approach to detect change would be to target several contributing factors to electricity demand that can be read in real time, such as weather and google trend data as a proxy of different sorts of activity. Conclusively, I aimed to explore various avenues of electricity demand to find variables that maybe be attributable. Through these insights I hope to find patterns that can provide actionable business & residential applications for the COVID normal periods & beyond.
+
+<center><h4>Extra Content</h4></center>
 
 Other plots such as weather, mobility & economic activity can be found on the data2app page also localised to Victoria, Australia. I've used live google search volume for certain keywords as a proxy for mobility & economic activity. The weather is read in live from the Bureau of Meteorology. In this exploration, I aim to only use only live data sources so when encorporated within a business model actionable insights can be obtained immediately.   
 
@@ -503,7 +498,7 @@ Other plots such as weather, mobility & economic activity can be found on the da
  
 \[energyProduction = f(x_1, ... , x_n)\]
 
-Tampering with some of the variables above, I aim to detect anomalous behaviours as they occur. Sample experiments are displayed in the extras page, including a simple SARIMAX forecast, t-SNE plot & benfords law. My current explorations are in change point analysis. 
+Sample experiments are displayed in the extras page, including a simple SARIMAX forecast, t-SNE plot & benfords law. My current explorations are in change point analysis & exploring what actionable insights can be made from electricity demand data outside of forecasting.  
 
 
 <!-- <div style="text-align: center;"><iframe width="560" height="315" src="https://www.youtube.com/embed/XXjlR2OK1kM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div> -->
